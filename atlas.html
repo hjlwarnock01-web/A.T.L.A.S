@@ -1,0 +1,2977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATLAS - Advanced Trading Logic Assistant System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            background: #f7f7f8;
+            color: #2d333a;
+        }
+
+        /* Sidebar - Claude Style */
+        .sidebar {
+            width: 260px;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 10px 16px;
+            background: #2d6cea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .new-chat-btn:hover {
+            background: #2557c4;
+        }
+
+        .new-chat-btn:before {
+            content: '+';
+            font-size: 18px;
+            font-weight: 400;
+        }
+
+        .conversations {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .conversation-item {
+            padding: 10px 12px;
+            margin: 2px 0;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .conversation-item:hover {
+            background: #f3f4f6;
+        }
+
+        .conversation-item.active {
+            background: #eff3f8;
+        }
+
+        .conversation-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .conversation-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .conversation-item h3 {
+            font-size: 13px;
+            font-weight: 400;
+            color: #2d333a;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 2px;
+        }
+
+        .conversation-item p {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .delete-btn {
+            opacity: 0;
+            padding: 4px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.15s;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .delete-btn:hover {
+            background: #fee;
+            color: #dc2626;
+        }
+
+        /* Main Chat Container - Claude Style */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
+        }
+
+        .atlas-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .atlas-logo h1 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #2d6cea 0%, #5b9cff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .atlas-logo p {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .api-status {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: #dcfce7;
+            color: #15803d;
+            font-weight: 500;
+        }
+
+        .api-status.error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Messages Area - Claude Style */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #fafafa;
+        }
+
+        .message {
+            max-width: 48rem;
+            padding: 16px 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            font-size: 15px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .message.user {
+            background: #eff3f8;
+            color: #2d333a;
+            border: 1px solid #e1e8f0;
+        }
+
+        .message.assistant {
+            background: #ffffff;
+            color: #2d333a;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .message.system {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Input Area - Claude Style */
+        .input-container {
+            padding: 16px 24px 24px;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .input-wrapper {
+            max-width: 48rem;
+            margin: 0 auto;
+            display: flex;
+            gap: 8px;
+            background: #ffffff;
+            border: 1.5px solid #d1d5db;
+            border-radius: 12px;
+            padding: 4px;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #2d6cea;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: #2d333a;
+            font-size: 15px;
+            resize: none;
+            font-family: inherit;
+            min-height: 24px;
+            max-height: 200px;
+            outline: none;
+        }
+
+        #messageInput::placeholder {
+            color: #9ca3af;
+        }
+
+        #sendBtn {
+            padding: 10px 20px;
+            background: #2d6cea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+            align-self: flex-end;
+        }
+
+        #sendBtn:hover:not(:disabled) {
+            background: #2557c4;
+        }
+
+        #sendBtn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            color: #9ca3af;
+        }
+
+        /* Typing Indicator - Claude Style */
+        .typing-indicator {
+            max-width: 48rem;
+            margin: 0 auto;
+            width: 100%;
+            padding: 16px 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #2d6cea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { 
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% { 
+                transform: translateY(-8px);
+                opacity: 1;
+            }
+        }
+
+        /* Empty State - Claude Style */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 40px 24px;
+            max-width: 48rem;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .empty-state-logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #2d6cea 0%, #5b9cff 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            font-size: 32px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .empty-state h2 {
+            font-size: 24px;
+            color: #2d333a;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            font-size: 15px;
+            color: #6b7280;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .example-prompts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+            width: 100%;
+        }
+
+        .example-prompt {
+            padding: 16px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .example-prompt:hover {
+            border-color: #2d6cea;
+            box-shadow: 0 4px 12px rgba(45, 108, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .example-prompt h4 {
+            color: #2d6cea;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .example-prompt p {
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 1000;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .message {
+                max-width: 100%;
+            }
+
+            .example-prompts {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <button class="new-chat-btn" onclick="createNewChat()">New chat</button>
+        </div>
+        <div class="conversations" id="conversationsList"></div>
+    </div>
+
+    <!-- Main Chat -->
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="atlas-logo">
+                <h1>ATLAS</h1>
+                <p>Advanced Trading Logic Assistant System</p>
+            </div>
+            <div class="api-status" id="apiStatus">Ready</div>
+        </div>
+        
+        <div class="messages" id="messages">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-logo">A</div>
+                <h2>Hey! I'm ATLAS</h2>
+                <p>Your intelligent trading system assistant. I can help validate setups, answer questions about zones, CHoCH patterns, risk management, and guide you through complex trading decisions.</p>
+                <div class="example-prompts">
+                    <div class="example-prompt" onclick="sendExamplePrompt('Is this a valid 1H demand zone?')">
+                        <h4>📊 Zone Validation</h4>
+                        <p>Verify if zones meet all requirements and have taps remaining</p>
+                    </div>
+                    <div class="example-prompt" onclick="sendExamplePrompt('Should I enter this trade?')">
+                        <h4>✅ Entry Checklist</h4>
+                        <p>Walk through the complete validation process step-by-step</p>
+                    </div>
+                    <div class="example-prompt" onclick="sendExamplePrompt('Where should my stop loss be?')">
+                        <h4>🎯 Stop Loss Guidance</h4>
+                        <p>Calculate precise stop placement based on your current phase</p>
+                    </div>
+                    <div class="example-prompt" onclick="sendExamplePrompt('What risk % should I use?')">
+                        <h4>💰 Risk Calculator</h4>
+                        <p>Determine exact risk percentage with all adjustments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea 
+                    id="messageInput" 
+                    placeholder="Ask ATLAS about setups, zones, risk management..."
+                    onkeydown="handleKeyPress(event)"
+                    rows="1"
+                ></textarea>
+                <button id="sendBtn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GEMINI_API_KEY = 'AIzaSyD2fvx4wUl3h68r9M2kMrkL7QZIZ0mnD-k';
+        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+        
+        // ==========================================
+        // PASTE YOUR COMPLETE V2.0 DOCUMENT HERE
+        // ==========================================
+        const TRADING_SYSTEM = `
+
+PASTE THE ENTIRE V2.0 MARKDOWN DOCUMENT HERE
+
+`# HARVEY'S COMPLETE MARKET STRUCTURE LOGIC SYSTEM
+
+**Version 2.1 - Production Release with Trigger Zones**
+
+*"May your edge stay sharp and your drawdowns shallow."*
+
+---
+
+## TABLE OF CONTENTS
+
+1. [Core Definitions](#i-core-definitions)
+2. [HTF Zone Validation System](#ii-htf-zone-validation-system)
+3. [Zone Drawing Rules](#iii-zone-drawing-rules)
+4. [Nested Zone Structure](#iv-nested-zone-structure)
+5. [Entry Logic Decision Tree](#v-entry-logic-decision-tree)
+6. [Incomplete CHoCH Pattern](#vi-incomplete-choch-pattern)
+7. [Liquidity Requirements](#vii-liquidity-requirements)
+8. [EMA Filters](#viii-ema-filters)
+9. [Stop Loss & Exit System](#ix-stop-loss--exit-system)
+10. [Risk Management](#x-risk-management)
+11. [Special Rules & Filters](#xi-special-rules--filters)
+12. [Complete Entry Checklist](#xii-complete-entry-checklist)
+13. [Position Management Summary](#xiii-position-management-summary)
+14. [Complexity & Implementation Notes](#xiv-complexity--implementation-notes)
+15. [Final Reminders](#xv-final-reminders)
+16. [**Trigger Zones (Advanced Refinement)** ⭐NEW](#xvi-trigger-zones-advanced-zone-refinement)
+
+---
+
+## I. CORE DEFINITIONS
+
+### 1.1 Timeframe Hierarchy
+```
+1M → 1W → 1D → 12H → 1H → 15M → 5M → 2M
+
+Interchangeable pairs:
+- 1D ↔ 12H (use either for validation)
+- 5M ↔ 2M (use either for entries)
+```
+
+### 1.2 CHoCH (Change of Character)
+**Confirmed when BODY closes beyond structure point:**
+
+- **Uptrend CHoCH (bearish):** Body closes BELOW previous HL (higher low)
+- **Downtrend CHoCH (bullish):** Body closes ABOVE previous LH (lower high)
+
+### 1.3 BOS (Break of Structure)
+- **Uptrend BOS:** Making Higher High (HH)
+- **Downtrend BOS:** Making Lower Low (LL)
+
+### 1.4 Zone Terminology
+
+**mzone:** 1D or 12H supply/demand zone ONLY (not 1H)
+
+**Gap:** Separation between zone and candles (no part of candle touching zone)
+
+**Tap:** Price enters zone, then price exits zone (gap forms again)
+- Pure price movement only
+- Has nothing to do with trades taken
+- Zone tap count tracks price engagement with zone
+
+**Internal Structure:** Micro trends visible within larger HTF moves
+- Example: 1H HL → HH move contains its own mini LL/HH structure
+- These micro trends form internal structure patterns
+- Can have zones that cause BOS within internal structure
+
+### 1.5 Zone Tap Definition
+
+**TAP LIFECYCLE:**
+```
+TAP STARTS: When any part of candle touches zone boundaries
+TAP CONTINUES: While any part of subsequent candles touch zone
+TAP ENDS: When gap forms (no part of candle touches zone via wicks)
+```
+
+**KEY POINTS:**
+- Multiple candles can be part of ONE tap
+- Tap ends when candle high < zone bottom (demand) or candle low > zone top (supply)
+- Regular zones get 2 taps maximum on their own timeframe
+- CHoCH zones get 3 taps maximum on their own timeframe
+
+---
+
+## II. HTF ZONE VALIDATION SYSTEM
+
+### 2.1 Zone Validation Hierarchy
+
+Every HTF zone requires CHoCH confirmation on **1 timeframe lower:**
+
+```
+1M zone → Validated by 1W CHoCH
+1W zone → Validated by 1D or 12H CHoCH
+1D/12H zone → Validated by 1H CHoCH
+1H zone → Validated by 15M CHoCH
+15M zone → Validated by 5M or 2M CHoCH
+```
+
+**CRITICAL UNDERSTANDING:**
+- Marked zone = immediately tradeable
+- CHoCH validates zone "worked" for us
+- But zone is useable before CHoCH occurs
+- CHoCH can occur anytime after zone touched (no time limit)
+
+### 2.2 Zone Tap Validity Rules
+
+**VALID TAP:**
+- All bodies throughout tap must respect opposite side of zone
+- Wicks CAN violate entry side (allowed)
+- Body breaking opposite side = tap invalidated
+
+**CONTEXT-DEPENDENT BODY RULES:**
+
+**Inside HTF Zone:**
+- Wicks making new LL/HH = ALLOWED (no limit)
+- Only body closing beyond LL/HH invalidates pattern
+- Gives reversal patterns more tolerance
+
+**Outside HTF Zone:**
+- Wick making new LL/HH = Automatic BOS
+- Confirms trend continuation immediately
+- Strict rules apply
+
+### 2.3 Zone State Machine
+
+```
+ZONE TAPPED (tap_count++):
+│
+├─ MONITOR VALIDATION TF FOR CHOCH:
+│  │
+│  ├─ IF CHoCH CONFIRMED:
+│  │  ├─ Zone validated (confirmed it worked)
+│  │  ├─ CHoCH signal active (trades independently)
+│  │  └─ Can continue entering trades in CHoCH direction
+│  │
+│  └─ IF NO CHOCH YET:
+│     └─ Check body position relative to zone
+│
+├─ BODY BREAKS OPPOSITE SIDE:
+│  │
+│  ├─ CHECK SUBSEQUENT CANDLES:
+│  │  │
+│  │  ├─ IF gap forms + aggressive movement (no stagnation):
+│  │  │  └─ ZONE FLIPS
+│  │  │     ├─ Demand → Supply (or vice versa)
+│  │  │     ├─ tap_count resets to 0
+│  │  │     ├─ New zone gets full lifecycle (2 or 3 taps)
+│  │  │     ├─ Needs new liquidity sweep
+│  │  │     └─ Must re-enter zone with gap for first tap
+│  │  │
+│  │  └─ IF stagnation OR no gap:
+│  │     └─ ZONE ELIMINATED
+│  │        └─ Remove from monitoring
+│  │
+│  └─ STAGNATION INDICATORS:
+│     - Multiple candles ranging in zone
+│     - Doji/spinning tops
+│     - Inside bars
+│     - No directional progress
+│     - Consolidation in zone area
+│
+└─ IF tap_count >= max_taps:
+   ├─ Regular zones: 2 taps → EXPIRES
+   └─ CHoCH zones: 3 taps → EXPIRES
+```
+
+### 2.4 CHoCH Signal Independence
+
+**CRITICAL CONCEPT:** CHoCH signals operate independently from zone state
+
+```
+CHoCH VALIDITY:
+├─ Remains valid until its swing point broken by body
+├─ DEMAND CHoCH: Valid until body closes below swing low
+├─ SUPPLY CHoCH: Valid until body closes above swing high
+└─ Zone can flip/eliminate but CHoCH stays active
+
+ZONE vs CHoCH:
+├─ Zone can flip → Stop new entries from that zone
+├─ CHoCH still valid → Continue managing existing positions
+└─ Two separate tracking systems
+```
+
+---
+
+## III. ZONE DRAWING RULES
+
+### 3.1 Zone Creation Criteria
+
+**ORIGIN RULE:**
+```
+Zone = Origin candle of impulsive move that causes BOS
+```
+
+**BOS-Based Zones (Regular Zones):**
+- Identify BOS (break of structure)
+- Find the origin candle that started the impulsive move to BOS
+- Draw zone: High to low of that origin candle
+- These zones get 2 taps maximum
+
+**CHoCH-Based Zones (CHoCH Zones):**
+- Identify CHoCH (change of character)
+- Find pullback move after CHoCH
+- Draw zone: High to low of pullback origin candle
+- These zones get 3 taps maximum
+
+### 3.2 Zone Boundaries
+
+**High to Low Rule:**
+- Zone top = High of origin candle
+- Zone bottom = Low of origin candle
+- Use candle wicks, not just bodies
+
+### 3.3 Zone Requirements
+
+**GAP REQUIREMENT (Critical):**
+```
+Valid zone MUST have gap between creation and first tap
+
+Gap = At least one candle not touching zone
+- Between zone creation candle and first tap candle
+- Candle in between must have no part touching zone
+- Any size gap acceptable (no minimum distance)
+
+NO GAP = INVALID ZONE
+```
+
+**SIZE REQUIREMENTS:**
+- No minimum zone size
+- No maximum zone size
+- Zone can be 2 pips or 200 pips
+
+**LOOKBACK PERIOD:**
+- Zones visible on chart are valid indefinitely
+- Zones do not expire by age
+- Only expire by tap limit or flip/elimination
+
+### 3.4 Zone Types & Tap Limits
+
+**REGULAR ZONES (from BOS):**
+- Supply zones: Resistance areas where price previously sold off
+- Demand zones: Support areas where price previously rallied
+- Maximum: 2 taps on their own timeframe
+
+**CHOCH ZONES (from CHoCH pullback):**
+- Supply zones: Created from bearish CHoCH pullback
+- Demand zones: Created from bullish CHoCH pullback
+- Maximum: 3 taps on their own timeframe
+- Used specifically in Case C (counter-trend entries)
+
+---
+
+## IV. NESTED ZONE STRUCTURE
+
+### 4.1 Mandatory Zone Hierarchy
+
+**FOR ALL 1H ZONE TRADES:**
+
+```
+Case A/B (Trend Continuation - 15M aligned):
+1H zone → 15M zone → 2M/5M zone
+
+Case C (Counter Trend - 15M opposite):
+[mzone backing] → 1H zone → 15M zone → 15M CHoCH zone → 2M/5M zone
+```
+
+**ZONE TYPE MATCHING:**
+- 1H Demand → Must find 15M Demand inside
+- 1H Supply → Must find 15M Supply inside
+- Types MUST match (no opposite zones)
+- 15M CHoCH zone (Case C only) must also match type
+
+**NO 15M ZONE = NO TRADE**
+```
+If 15M zone does not exist inside 1H zone boundaries:
+└─ Setup invalid regardless of other conditions
+   └─ Do not trade
+```
+
+### 4.2 15M Zone Identification
+
+**SCANNING PROCESS:**
+```
+1. Price taps 1H zone
+2. Examine price action INSIDE 1H zone boundaries
+3. Identify 15M zones from previous 15M structure
+4. 15M zone = where 15M previously bounced/rejected
+5. Can be multiple 15M zones - any will work
+6. Verify type matches (demand in demand, supply in supply)
+```
+
+**FOR LONGS (1H Demand Zone):**
+- Scan for 15M demand zones inside 1H demand boundaries
+- Look for where 15M previously formed support/rallied
+- Price must tap at least ONE 15M demand zone
+
+**FOR SHORTS (1H Supply Zone):**
+- Scan for 15M supply zones inside 1H supply boundaries
+- Look for where 15M previously formed resistance/rejected
+- Price must tap at least ONE 15M supply zone
+
+### 4.3 CHoCH Zones (Case C Only)
+
+**WHEN REQUIRED:**
+- ONLY for Case C (15M opposite direction to trade)
+- NOT required for Case A or Case B
+
+**CHOCH ZONE CREATION (For Longs in Case C):**
+```
+15M in downtrend, hitting 1H demand:
+
+STEP 1: 15M makes LL (lower low)
+STEP 2: 15M rallies from LL → LH (to 15M supply - the incomplete pattern LH)
+STEP 3: Identify origin candle of LL → LH rally
+STEP 4: Draw CHoCH zone: High to low of that origin candle
+STEP 5: This is target area for 2M/5M CHoCH to occur
+
+NOTE: The LH (15M supply from pattern) is NOT the CHoCH zone
+      CHoCH zone comes from the RALLY to that LH
+```
+
+**CHOCH ZONE CREATION (For Shorts in Case C):**
+```
+15M in uptrend, hitting 1H supply:
+
+STEP 1: 15M makes HH (higher high)
+STEP 2: 15M drops from HH → HL (to 15M demand - the incomplete pattern HL)
+STEP 3: Identify origin candle of HH → HL drop
+STEP 4: Draw CHoCH zone: High to low of that origin candle
+STEP 5: This is target area for 2M/5M CHoCH to occur
+```
+
+**CHOCH ZONE REQUIREMENTS:**
+- Must have gap between creation and tap
+- Gets 3 taps maximum (vs 2 for regular zones)
+- Must be separate from 15M zone
+- Type must match overall trade direction
+
+**"BIG BROTHER" LOGIC:**
+```
+mzone (1D/12H) provides backing:
+├─ mzone acts as strong HTF support/resistance
+├─ CHoCH zone may be unproven
+├─ But mzone presence gives CHoCH zone credibility
+└─ Increases probability of reversal from CHoCH zone
+```
+
+### 4.4 Case C Sequence with CHoCH Zone
+
+```
+COMPLETE FLOW (Longs Example):
+
+1. 1H demand zone tapped
+2. Verify 15M demand zone exists inside 1H demand ✓
+3. Price taps 15M demand zone ✓
+4. 15M in downtrend (Case C identified)
+5. Incomplete CHoCH pattern forming:
+   ├─ 15M made LL
+   ├─ 15M rallied to LH (15M supply)
+   └─ 15M dropping back to LL (bodies respect LL)
+6. Draw 15M CHoCH zone from LL → LH rally origin
+7. Verify CHoCH zone separate from 15M demand zone
+8. 15M liquidity swept ✓
+9. Look for 2M/5M CHoCH IN CHoCH zone area
+10. 2M/5M CHoCH creates entry zone
+11. Enter on pullback to 2M/5M zone
+```
+
+### 4.5 Nested Zone Relationships
+
+**SEPARATE vs OVERLAPPING:**
+- 1H zone and 15M zone: Can overlap, 15M inside 1H boundaries
+- 15M zone and CHoCH zone (Case C): Must be separate zones
+- CHoCH zone and 2M/5M zone: Can overlap, 2M/5M inside CHoCH area
+
+**ZONE HIERARCHY PURPOSE:**
+- 1H zone: Broad area of interest
+- 15M zone: Refined area within 1H
+- CHoCH zone (Case C): Target area for reversal
+- 2M/5M zone: Precise entry location
+
+---
+
+## V. ENTRY LOGIC DECISION TREE
+
+### 5.1 HTF Zone Entry Framework
+
+**AT 1H ZONE TAP:**
+
+```
+STEP 1: Verify 15M zone exists inside 1H zone (matching type)
+├─ IF YES: Proceed
+└─ IF NO: STOP - No trade
+
+STEP 2: Wait for price to tap 15M zone
+
+STEP 3: Check 15M trend state:
+
+├─ CASE A: 15M Already Aligned
+│  ├─ 15M CHoCH already occurred in trade direction
+│  ├─ 15M structure supports trade
+│  ├─ NO incomplete pattern needed
+│  ├─ NO CHoCH zone needed
+│  │
+│  └─ Requirements:
+│     ├─ 15M liquidity swept
+│     ├─ 2M/5M CHoCH confirmed (after liquidity)
+│     ├─ EMA requirements met
+│     └─ Entry: Pullback to 2M/5M zone
+│
+├─ CASE B: 15M Same Direction as 1H Trend
+│  ├─ Both timeframes aligned (continuation)
+│  ├─ Example: 1H uptrend + 15M uptrend, hit 1H demand
+│  ├─ NO incomplete pattern needed
+│  ├─ NO CHoCH zone needed
+│  │
+│  └─ Requirements:
+│     ├─ 15M liquidity swept
+│     ├─ 2M/5M CHoCH confirmed (after liquidity)
+│     ├─ EMA requirements met
+│     └─ Entry: Pullback to 2M/5M zone
+│
+└─ CASE C: 15M Opposite Direction
+   ├─ 15M trend opposite to trade direction
+   ├─ Example: Want long but 15M in downtrend
+   ├─ NEED incomplete CHoCH pattern (mandatory)
+   ├─ NEED 15M CHoCH zone (mandatory)
+   ├─ mzone (1D/12H) backing optional but adds confidence
+   │
+   └─ Requirements:
+      ├─ Incomplete 15M CHoCH pattern forming
+      ├─ 15M CHoCH zone identified and separate from 15M zone
+      ├─ 15M liquidity swept (during pattern)
+      ├─ 2M/5M CHoCH confirmed (after liquidity, in CHoCH zone area)
+      ├─ EMA requirements met
+      └─ Entry: Pullback to 2M/5M zone
+```
+
+### 5.2 Trade Direction Rules at HTF Zones
+
+**PRIORITY RULE:** Trade validated LTF structure until CHoCH invalidates
+
+```
+PRINCIPLE:
+├─ Trade WITH validated structure
+├─ AGAINST unvalidated zones
+└─ Until CHoCH proves zone is working
+
+EXAMPLE:
+├─ 1H downtrend validated (has 1H CHoCH)
+├─ Price hits 12H demand zone (mzone)
+├─ 12H/1D trend is UP
+│
+└─ TRADE DIRECTION:
+   ├─ Continue SHORTING (validated 1H downtrend)
+   ├─ UNTIL 1H bullish CHoCH occurs
+   └─ THEN flip to LONGING (12H demand validated)
+```
+
+### 5.3 Timing Between Stages
+
+**NO TIME LIMITS:**
+- Wait as long as necessary for conditions to align
+- Typical full setup: 1-3 hours
+- Lower timeframes happen closer together
+- Can take days if needed - zone remains valid until tap limit
+
+---
+
+## VI. INCOMPLETE CHOCH PATTERN
+
+### 6.1 Pattern Structure (Case C Only)
+
+**FOR LONGS (15M in downtrend):**
+
+```
+SETUP CONTEXT:
+├─ Want to go long
+├─ 1H demand zone tapped
+├─ 15M demand zone exists inside 1H demand
+├─ But 15M is in downtrend (opposite direction)
+└─ Need incomplete CHoCH pattern to enter
+
+PATTERN FORMATION:
+
+STEP 1: 15M makes Lower Low (LL)
+├─ Price drops in 15M downtrend
+├─ Forms new LL
+└─ Can be wick or body creating the LL
+
+STEP 2: 15M rallies to Lower High (LH)
+├─ Price bounces from LL
+├─ Rallies to 15M supply zone
+├─ Creates LH structure point
+└─ This LH is the 15M supply from pattern
+
+STEP 3: 15M drops back toward LL
+├─ Price moves down from LH toward previous LL
+├─ CRITICAL BODY RULE:
+│  ├─ Bodies MUST stay ABOVE LL (respect LL)
+│  ├─ Wicks CAN make new LL below previous LL
+│  │  └─ (Only if inside HTF zone - tolerance allowed)
+│  └─ Body closing below LL = pattern invalidated
+└─ This creates incomplete 15M bullish CHoCH
+
+STEP 4: During final leg (LH → LL drop)
+├─ 2M/5M is in downtrend
+├─ Monitor for 2M/5M bullish CHoCH
+├─ 2M/5M CHoCH confirms reversal starting
+└─ Look for this in CHoCH zone area
+
+STEP 5: CHoCH zone identification
+├─ Find origin candle of LL → LH rally (Step 1 to Step 2)
+├─ Draw 15M CHoCH zone: High to low of origin candle
+├─ Verify separate from 15M demand zone
+└─ 2M/5M CHoCH should occur in this CHoCH zone area
+```
+
+**FOR SHORTS (15M in uptrend):**
+
+```
+SETUP CONTEXT:
+├─ Want to go short
+├─ 1H supply zone tapped
+├─ 15M supply zone exists inside 1H supply
+├─ But 15M is in uptrend (opposite direction)
+└─ Need incomplete CHoCH pattern to enter
+
+PATTERN FORMATION:
+
+STEP 1: 15M makes Higher High (HH)
+├─ Price rallies in 15M uptrend
+├─ Forms new HH
+└─ Can be wick or body creating the HH
+
+STEP 2: 15M drops to Higher Low (HL)
+├─ Price retraces from HH
+├─ Drops to 15M demand zone
+├─ Creates HL structure point
+└─ This HL is the 15M demand from pattern
+
+STEP 3: 15M rallies back toward HH
+├─ Price moves up from HL toward previous HH
+├─ CRITICAL BODY RULE:
+│  ├─ Bodies MUST stay BELOW HH (respect HH)
+│  ├─ Wicks CAN make new HH above previous HH
+│  │  └─ (Only if inside HTF zone - tolerance allowed)
+│  └─ Body closing above HH = pattern invalidated
+└─ This creates incomplete 15M bearish CHoCH
+
+STEP 4: During final leg (HL → HH rally)
+├─ 2M/5M is in uptrend
+├─ Monitor for 2M/5M bearish CHoCH
+├─ 2M/5M CHoCH confirms reversal starting
+└─ Look for this in CHoCH zone area
+
+STEP 5: CHoCH zone identification
+├─ Find origin candle of HH → HL drop (Step 1 to Step 2)
+├─ Draw 15M CHoCH zone: High to low of origin candle
+├─ Verify separate from 15M supply zone
+└─ 2M/5M CHoCH should occur in this CHoCH zone area
+```
+
+### 6.2 Pattern Validation Rules
+
+**BODY RESPECT (Inside HTF Zone):**
+- Bodies MUST stay on correct side of LL (longs) or HH (shorts)
+- Wicks making new LL/HH = ALLOWED (no limit on how far)
+- Only body violation invalidates pattern
+- This tolerance only applies inside HTF zones
+
+**OUTSIDE HTF ZONE (Strict Rules):**
+- Wick making new LL/HH = Automatic BOS
+- Pattern immediately invalidated
+- Confirms trend continuation
+
+**PATTERN FAILURE:**
+- Body closes beyond LL (longs) or HH (shorts)
+- Pattern invalidated immediately
+- Need fresh pattern attempt OR wait for full 15M CHoCH
+- Fresh liquidity sweep required for new attempt
+
+**WHY THIS PATTERN WORKS:**
+- Catches reversal before 15M fully CHoCHs
+- 2M/5M gives precise entry timing
+- Better entry price than waiting for full 15M CHoCH
+- mzone backing increases probability
+
+---
+
+## VII. LIQUIDITY REQUIREMENTS
+
+### 7.1 Mandatory Liquidity Rule
+
+**BEFORE ENTERING ANY POSITION:**
+```
+15M liquidity MUST be swept
+├─ Can occur anytime before entry
+├─ 2M/5M CHoCH MUST come AFTER liquidity swept
+└─ Liquidity must not cause 15M CHoCH
+```
+
+**SEQUENCE CRITICAL:**
+```
+Liquidity sweep → THEN → 2M/5M CHoCH → THEN → Entry
+
+WRONG: 2M/5M CHoCH before liquidity = Wait for new CHoCH after sweep
+```
+
+### 7.2 Liquidity Definition
+
+**FOR LONGS:**
+```
+Must take 15M candle LOW:
+├─ Identify any visible 15M low on chart
+├─ Can be: LL, HL, or internal low
+├─ Not limited to swing structure - any low counts
+├─ Price wicks or body closes BELOW that low
+├─ "Taking liquidity" = sweeping stops below that low
+│
+└─ VALIDATION CHECK:
+   ├─ Does this create 15M CHoCH?
+   │  ├─ YES → Invalid (that's CHoCH itself, not liquidity)
+   │  └─ NO → Valid liquidity sweep ✓
+```
+
+**FOR SHORTS:**
+```
+Must take 15M candle HIGH:
+├─ Identify any visible 15M high on chart
+├─ Can be: HH, LH, or internal high
+├─ Not limited to swing structure - any high counts
+├─ Price wicks or body closes ABOVE that high
+├─ "Taking liquidity" = sweeping stops above that high
+│
+└─ VALIDATION CHECK:
+   ├─ Does this create 15M CHoCH?
+   │  ├─ YES → Invalid (that's CHoCH itself, not liquidity)
+   │  └─ NO → Valid liquidity sweep ✓
+```
+
+### 7.3 Liquidity Sourcing
+
+**ANY of these can provide liquidity sweep:**
+- Recent 15M swing highs/lows
+- Internal 15M highs/lows (not swing points)
+- HTF zone tap itself (if it takes 15M high/low)
+- Wick respecting LL/HH in incomplete pattern (if it takes a 15M high/low)
+- Multiple 15M highs/lows visible - only ONE needs to be taken
+
+**WHICH HIGH/LOW:**
+- Any visible 15M high/low works
+- Most recent preferred but not required
+- More significant levels preferred but not required
+- Only requirement: ONE 15M high (shorts) or low (longs) taken
+
+### 7.4 Liquidity Reset Rules
+
+**Fresh sweep needed when:**
+- Incomplete CHoCH pattern fails (body violates LL/HH)
+- Zone flips (new zone state requires new sweep)
+- Setup abandoned and new attempt made
+
+**Liquidity stays valid when:**
+- Pattern still forming
+- Same zone tap continuing
+- CHoCH hasn't changed yet
+- Re-entering after stop out (original sweep still valid)
+
+**RE-ENTRY AFTER STOP OUT:**
+```
+Get stopped out of trade:
+├─ Original liquidity sweep still valid
+├─ CHoCH zone still valid (unless broken through)
+├─ Only need: New 2M/5M CHoCH
+└─ Then can re-enter on pullback to new 2M/5M zone
+```
+
+---
+
+## VIII. EMA FILTERS
+
+### 8.1 EMA Configuration
+
+**EMA 1:**
+- Timeframe: 3H
+- Length: 9
+- Usage: Primary reference if updated recently
+- Updates: Every 3 hours
+
+**EMA 2:**
+- Timeframe: 1M
+- Length: 1340
+- Usage: Real-time proxy for 3H EMA
+- Updates: Every minute
+- Purpose: Avoid losing trades while waiting for 3H candle
+
+**EMA 3:**
+- Timeframe: 1D
+- Length: 9
+- Usage: Trend direction reference (not mandatory requirement)
+
+### 8.2 EMA Selection Logic
+
+**WHEN TO USE EMA 1 vs EMA 2:**
+```
+Check at time of spotting setup:
+
+IF 3H candle printed in last 30 minutes:
+└─ Use EMA 1 (3H EMA is current and fresh)
+
+ELSE (3H candle older than 30 minutes):
+└─ Use EMA 2 (1M 1340 EMA as real-time proxy)
+```
+
+### 8.3 EMA Entry Requirements (Mandatory)
+
+**Check on 1H chart for all trades:**
+
+**FOR LONGS:**
+```
+EITHER:
+├─ Price touched EMA 1/2 from BELOW in last 2 candles on 1H
+│  └─ 1H candle came up and touched/crossed EMA from below
+OR
+└─ Price currently trading BELOW EMA 1/2
+   └─ Current 1H price is under the EMA
+
+If NEITHER condition met → NO TRADE
+```
+
+**FOR SHORTS:**
+```
+EITHER:
+├─ Price touched EMA 1/2 from ABOVE in last 2 candles on 1H
+│  └─ 1H candle came down and touched/crossed EMA from above
+OR
+└─ Price currently trading ABOVE EMA 1/2
+   └─ Current 1H price is over the EMA
+
+If NEITHER condition met → NO TRADE
+```
+
+**LOGIC:**
+- For longs: Want to be on "underside" of EMA (below it)
+- For shorts: Want to be on "overside" of EMA (above it)
+- Recent touch OR currently on correct side = Valid
+
+### 8.4 EMA Trend Confirmation (Additional, Not Required)
+
+**BONUS CONFIDENCE (Not mandatory for trade):**
+
+```
+FOR LONGS:
+├─ Check: Is EMA 1/2 positioned above EMA 3?
+└─ YES → Additional uptrend confirmation (+confidence)
+
+FOR SHORTS:
+├─ Check: Is EMA 1/2 positioned below EMA 3?
+└─ YES → Additional downtrend confirmation (+confidence)
+```
+
+**Can still trade if EMA 1/2 vs EMA 3 doesn't align:**
+- This is bonus confirmation only
+- Not a requirement for entry
+- Helps with risk adjustment (see Risk Management section)
+
+---
+
+## IX. STOP LOSS & EXIT SYSTEM
+
+### 9.1 Stop Loss Progression (5 Phases)
+
+**PHASE 1: INITIAL STOP (Entry to 15M CHoCH)**
+
+**FOR LONGS:**
+```
+IF entering from incomplete CHoCH pattern (Case C):
+└─ Stop = 15M LL - 3.5 pips
+   └─ The Lower Low from incomplete pattern
+
+IF entering from confirmed 15M CHoCH (Case A/B):
+└─ Stop = Most recent 15M HL - 3.5 pips
+   └─ The Higher Low from 15M uptrend
+```
+
+**FOR SHORTS:**
+```
+IF entering from incomplete CHoCH pattern (Case C):
+└─ Stop = 15M HH + 3.5 pips
+   └─ The Higher High from incomplete pattern
+
+IF entering from confirmed 15M CHoCH (Case A/B):
+└─ Stop = Most recent 15M LH + 3.5 pips
+   └─ The Lower High from 15M downtrend
+```
+
+**DURATION:** From entry until 15M CHoCH confirmed
+
+---
+
+**PHASE 2: POST 15M CHOCH (CHoCH to First BOS)**
+
+**STOP STAYS SAME AS PHASE 1**
+
+Wait for first 15M BOS in trade direction before moving stop
+
+**DURATION:** From 15M CHoCH until first 15M BOS occurs
+
+---
+
+**PHASE 3: POST FIRST BOS (First BOS to 1H Structure Change)**
+
+**FOR LONGS:**
+```
+Move stop to: Most recent 15M HL - 3.5 pips
+└─ After first 15M BOS up, new HL forms
+   └─ Trail behind this new HL
+```
+
+**FOR SHORTS:**
+```
+Move stop to: Most recent 15M LH + 3.5 pips
+└─ After first 15M BOS down, new LH forms
+   └─ Trail behind this new LH
+```
+
+**DURATION:** Until 1H BOS or 1H CHoCH occurs in trade direction
+
+---
+
+**PHASE 4: SCALED UP (After 1H BOS/CHoCH)**
+
+**FOR LONGS:**
+```
+Move stop to: 1H HL - 3.5 pips
+└─ Now tracking 1H structure instead of 15M
+   └─ "Scaled up" to higher timeframe
+```
+
+**FOR SHORTS:**
+```
+Move stop to: 1H LH + 3.5 pips
+└─ Now tracking 1H structure instead of 15M
+   └─ "Scaled up" to higher timeframe
+```
+
+**DURATION:** Until opposing 1H zone hit OR position closed
+
+---
+
+**PHASE 5: TRAILING (Every 1H BOS After Scale Up)**
+
+**FOR LONGS:**
+```
+After EACH subsequent 1H BOS up:
+└─ Move stop to: New 1H HL - 3.5 pips
+   └─ Trail behind each new higher low formed
+```
+
+**FOR SHORTS:**
+```
+After EACH subsequent 1H BOS down:
+└─ Move stop to: New 1H LH + 3.5 pips
+   └─ Trail behind each new lower high formed
+```
+
+**DURATION:** Until opposing zone hit or exit triggered
+
+---
+
+### 9.2 Take Profit / Opposing Zone Management
+
+**TARGET:** Opposing 1H zone
+```
+LONGS → Target 1H supply zone
+SHORTS → Target 1H demand zone
+```
+
+**AT OPPOSING ZONE - SWITCH TO TIGHT STOP MODE:**
+
+```
+When price reaches opposing 1H zone:
+
+1. IDENTIFY PHASE BEFORE OPPOSING ZONE:
+   ├─ Were you in Phase 4/5? (1H structure-based stop)
+   └─ Or Phase 3? (15M structure-based stop)
+
+2. SWITCH TO 5M/2M TRAILING:
+   ├─ FOR LONGS:
+   │  └─ Trail behind 5M/2M HL - 3.5 pips after each BOS
+   │
+   └─ FOR SHORTS:
+      └─ Trail behind 5M/2M LH + 3.5 pips after each BOS
+
+3. IF PRICE BREAKS THROUGH OPPOSING ZONE:
+   ├─ Zone didn't hold, price continuing
+   │
+   ├─ REVERT TO PREVIOUS PHASE:
+   │  ├─ If was Phase 4/5 (1H-based):
+   │  │  └─ Move stop back to 1H HL/LH - 3.5 pips
+   │  │
+   │  └─ If was Phase 3 (15M-based):
+   │     └─ Move stop back to 15M HL/LH - 3.5 pips
+   │
+   └─ Continue trailing at reverted timeframe
+```
+
+**TIGHT STOP PURPOSE:**
+- "Strangle" the trade at opposing zone
+- Not allowing market flow to exit easily
+- But captures sudden spikes through flip zones
+- Lets you hold through most flip zone scenarios
+- 5M/2M gives very tight trailing
+
+### 9.3 Exit Triggers
+
+**PRIMARY EXIT: Stop Loss Hit**
+
+**SECONDARY EXIT: CHoCH Invalidation**
+```
+FOR LONGS:
+└─ If body closes below swing low from current phase
+   └─ Structure broken, trend invalidated
+
+FOR SHORTS:
+└─ If body closes above swing high from current phase
+   └─ Structure broken, trend invalidated
+```
+
+**NO TIME-BASED EXITS:**
+- Hold position as long as structure intact
+- Trail stop through BOS progressions
+- Let market structure dictate exit
+
+**WEEKEND CLOSE:**
+- Close all positions before market close Friday
+- Mandatory regardless of structure
+- No weekend holds
+
+### 9.4 Stop Loss Gap (All Phases)
+
+**3.5 PIP GAP CONSTANT:**
+```
+ALL stop losses use 3.5 pip buffer:
+├─ Phase 1: 15M swing - 3.5 pips
+├─ Phase 2: Same as Phase 1
+├─ Phase 3: 15M HL/LH - 3.5 pips
+├─ Phase 4: 1H HL/LH - 3.5 pips
+├─ Phase 5: 1H HL/LH - 3.5 pips (trailing)
+└─ Tight stop: 5M/2M HL/LH - 3.5 pips
+
+PURPOSE: Avoid minor liquidity grabs
+```
+
+---
+
+## X. RISK MANAGEMENT
+
+### 10.1 Position Sizing Formula
+
+**BASELINE RISK:** 1.0% of account per trade
+
+**CALCULATION:**
+```
+Risk Amount ($) = Account Size × Risk %
+Stop Distance (pips) = |Entry Price - Stop Loss Price|
+Pip Value = Depends on lot size and pair
+Position Size (lots) = Risk Amount ÷ (Stop Distance × Pip Value)
+```
+
+### 10.2 Risk Adjustment Variables
+
+**THREE FACTORS ADJUST BASELINE 1.0%:**
+
+**FACTOR 1: EMA Direction vs 1D EMA**
+```
+Compare EMA 1/2 (3H EMA) to EMA 3 (1D EMA):
+
+PRO DIRECTION:
+├─ Long: EMA 1/2 above EMA 3 → Adjustment: +0.0%
+└─ Short: EMA 1/2 below EMA 3 → Adjustment: +0.0%
+
+COUNTER DIRECTION:
+├─ Long: EMA 1/2 below EMA 3 → Adjustment: -0.25%
+└─ Short: EMA 1/2 above EMA 3 → Adjustment: -0.25%
+```
+
+**FACTOR 2: 15M Trend Alignment**
+```
+PRO 15M TREND (Case A or B):
+├─ 15M already aligned with trade direction
+└─ Adjustment: +0.25%
+
+COUNTER 15M TREND (Case C):
+├─ 15M opposite direction, incomplete CHoCH needed
+└─ Adjustment: +0.0%
+```
+
+**FACTOR 3: Unvalidated mzone**
+```
+TRADING AGAINST UNVALIDATED 1D/12H ZONE:
+├─ Example: 1H uptrend, hit 1D supply, no 1H CHoCH yet
+├─ Trading against HTF zone without confirmation
+└─ Adjustment: -0.25%
+
+VALIDATED OR NO mzone:
+└─ Adjustment: +0.0%
+```
+
+### 10.3 Risk Calculation Examples
+
+**EXAMPLE 1: Maximum Risk (1.25%)**
+```
+Setup:
+├─ Long from 1H demand
+├─ EMA 1/2 above EMA 3 (pro direction) → +0.0%
+├─ 15M already in uptrend (Case A) → +0.25%
+├─ No unvalidated mzone → +0.0%
+
+Risk: 1.0% + 0.0% + 0.25% + 0.0% = 1.25%
+```
+
+**EXAMPLE 2: Minimum Risk (0.5%)**
+```
+Setup:
+├─ Short from 1H supply
+├─ EMA 1/2 above EMA 3 (counter to short) → -0.25%
+├─ 15M in uptrend, incomplete pattern (Case C) → +0.0%
+├─ Trading against 1D demand, no 1H CHoCH → -0.25%
+
+Risk: 1.0% - 0.25% + 0.0% - 0.25% = 0.5%
+```
+
+**EXAMPLE 3: Baseline Risk (1.0%)**
+```
+Setup:
+├─ Long from 1H demand
+├─ EMA 1/2 below EMA 3 (counter direction) → -0.25%
+├─ 15M already in uptrend (Case A) → +0.25%
+├─ No unvalidated mzone → +0.0%
+
+Risk: 1.0% - 0.25% + 0.25% + 0.0% = 1.0%
+```
+
+### 10.4 Position Limits
+
+**MAXIMUM POSITIONS:**
+```
+├─ 1 position per pair maximum
+├─ EURUSD: Max 1 trade
+├─ USDJPY: Max 1 trade
+└─ Total: Max 2 simultaneous trades (1 per pair)
+```
+
+**MULTIPLE VALID SETUPS:**
+```
+If both pairs have valid setups:
+├─ Take both trades
+├─ Full risk % on each
+├─ No risk splitting
+└─ Can have 2.5% total exposure (1.25% × 2) maximum
+```
+
+**NO SCALING IN:**
+```
+One entry per setup:
+├─ Do not add to winning positions
+├─ Do not average into losers
+└─ One entry, trail stop, exit when triggered
+```
+
+### 10.5 All Valid Setups Equal Quality
+
+**NO PREFERENCE HIERARCHY:**
+```
+If setup passes complete checklist:
+├─ Same confidence level regardless of variables
+├─ Trade all valid setups
+├─ No cherry-picking based on "feel"
+└─ System is 100% mechanical
+```
+
+**QUALITY FACTORS DO NOT CREATE PREFERENCE:**
+- Case A/B/C: All equal if checklist passes
+- mzone backing vs no mzone: All equal if valid
+- Multiple confluences: All equal if valid
+- Pro vs counter EMA: All equal (affects risk %, not quality)
+
+---
+
+## XI. SPECIAL RULES & FILTERS
+
+### 11.1 CHoCH Without HTF Zone Rule
+
+**ANTI-MANIPULATION FILTER:**
+
+```
+When CHoCH occurs WITHOUT corresponding HTF zone:
+
+EXAMPLE 1: Trading 1H moves
+├─ 1H uptrend active
+├─ 1H CHoCH to downtrend occurs
+├─ NO 1D or 12H zone (no mzone) present
+│
+ACTION:
+├─ DO NOT trade new trend direction (shorts)
+├─ CONTINUE trading old trend direction (longs)
+├─ UNTIL 2 consecutive 1H BOS in new direction
+│  └─ Wait for 2 consecutive Lower Lows on 1H
+├─ THEN can trade new trend direction (shorts)
+
+EXAMPLE 2: Trading 15M moves
+├─ 15M uptrend active
+├─ 15M CHoCH to downtrend occurs
+├─ NO 1H zone present
+│
+ACTION:
+├─ DO NOT trade new trend direction (shorts)
+├─ CONTINUE trading old trend direction (longs)
+├─ UNTIL 2 consecutive 15M BOS in new direction
+│  └─ Wait for 2 consecutive Lower Lows on 15M
+├─ THEN can trade new trend direction (shorts)
+```
+
+**HTF ZONE DEFINITIONS:**
+- For 1H trading: HTF = 1D, 12H, 1W, 1M (mzones and above)
+- For 15M trading: HTF = 1H, 1D, 12H, 1W, 1M
+
+**PURPOSE:**
+- Avoid fake CHoCH
+- Avoid market manipulation
+- Only trade CHoCH when validated by HTF zone OR 2× BOS
+
+**CONSECUTIVE BOS:**
+- Must be back-to-back structure breaks
+- LL then HH = another CHoCH (not 2 consecutive)
+- 2 LLs = consecutive (confirms downtrend real)
+
+### 11.2 News Event Blackout
+
+**DO NOT ENTER TRADES:**
+```
+30 minutes BEFORE and 30 minutes AFTER:
+├─ ECB (European Central Bank) announcements
+├─ Fed (Federal Reserve) announcements
+└─ US Interest Rate decisions
+
+Total blackout: 1 hour window around event
+```
+
+**EXISTING POSITIONS:**
+```
+If already in trade when news hits:
+├─ DO NOT close position
+├─ Hold through news event
+├─ Let stop loss and structure manage risk
+└─ News pauses NEW entries only, not position management
+```
+
+**TRACKING:**
+- Manual economic calendar monitoring required
+- Mark calendar with news times
+- Set alerts 30 minutes before events
+
+### 11.3 Trading Hours (CET Time)
+
+**ENTRY WINDOWS (New positions only):**
+```
+Session 1: 07:30 - 14:30 CET
+Session 2: 16:00 - 19:30 CET
+
+GAP: 14:30 - 16:00 (No new entries)
+```
+
+**POSITION MANAGEMENT:**
+```
+CAN hold positions:
+├─ Outside entry windows
+├─ Through 14:30-16:00 gap
+├─ Overnight if not weekend
+└─ Stops trail regardless of time
+
+MUST close positions:
+└─ Before market close Friday (no weekend holds)
+```
+
+**ENTRY TIMING RULES:**
+```
+14:29 entry:
+├─ Can enter if setup valid
+└─ Hold through gap to 16:00
+
+19:29 entry:
+├─ Can enter if setup valid
+└─ Hold overnight to next session
+
+Friday 19:29:
+├─ DO NOT enter new positions
+└─ Close all existing before market close
+```
+
+**SESSION CONSIDERATIONS:**
+```
+EURUSD: Current times work well
+USDJPY: Considering Asia session adjustment
+└─ May add Tokyo session hours in future
+```
+
+### 11.4 2M/5M Entry Zone Definition
+
+**ENTRY ZONE = Range BEFORE CHoCH break**
+
+**FOR LONGS:**
+```
+2M/5M in downtrend:
+├─ Price makes new low
+├─ Price consolidates/ranges (typically 3-5 candles)
+├─ CHoCH breaks upward (body closes above LH)
+│
+ENTRY ZONE:
+└─ The consolidation range BEFORE CHoCH break
+   ├─ NOT just the swing low point
+   ├─ The entire structure before break
+   └─ Usually spans several candles worth of range
+```
+
+**FOR SHORTS:**
+```
+2M/5M in uptrend:
+├─ Price makes new high
+├─ Price consolidates/ranges (typically 3-5 candles)
+├─ CHoCH breaks downward (body closes below HL)
+│
+ENTRY ZONE:
+└─ The consolidation range BEFORE CHoCH break
+   ├─ NOT just the swing high point
+   ├─ The entire structure before break
+   └─ Usually spans several candles worth of range
+```
+
+**ENTRY TRIGGER:**
+```
+After 2M/5M CHoCH confirmed:
+├─ Price moves away from entry zone
+├─ Price pulls back into entry zone
+└─ Enter when price taps entry zone boundaries
+```
+
+### 11.5 Weekend Gap Handling
+
+**GAP THROUGH ZONE:**
+```
+SCENARIO:
+├─ Friday close: Price below zone
+├─ Monday open: Price above zone
+└─ Price jumped through entire zone
+
+RESULT: Zone flips
+├─ Demand → Supply (or vice versa)
+├─ Aggressive move + gap = flip condition met
+
+FOR FLIP ZONE TO BE TAPPED:
+├─ Price must return to flipped zone area
+├─ Must have gap (candle not touching, then next enters)
+└─ Then = Valid tap 1 of flipped zone
+```
+
+**WEEKEND GAP TO ZONE EDGE:**
+```
+SCENARIO:
+├─ Friday close: Price at 1.0500
+├─ Zone: 1.0505-1.0510
+├─ Monday open: Price at 1.0506 (inside zone)
+
+RESULT: Price jumped into zone
+└─ This begins tap 1 of zone (if gap between Friday and Monday)
+```
+
+### 11.6 Conflicting Signals (100% Mechanical)
+
+**SYSTEM IS RULE-BASED:**
+```
+If checklist passes → Take trade
+No discretion allowed:
+├─ No "looks wrong" overrides
+├─ No "gut feeling" adjustments
+├─ No cherry-picking setups
+└─ Checklist = entry decision
+```
+
+**RAPID CHOCH REVERSAL:**
+```
+15M CHoCH bullish confirmed, then 15M CHoCH bearish:
+
+WITH 1H zone backing:
+└─ Original CHoCH valid, take trade
+
+WITHOUT 1H zone:
+├─ Trap CHoCH (manipulation)
+├─ Do not trade
+└─ Wait for 2 consecutive BOS to confirm real trend
+```
+
+**2M/5M CHOCH REVERSAL BEFORE ENTRY:**
+```
+All conditions met, 2M/5M CHoCH occurs, then reverses:
+
+ACTION:
+├─ Wait for new 2M/5M CHoCH in original direction
+├─ All other conditions still valid
+├─ Just need fresh 2M/5M CHoCH
+└─ Enter on pullback to new 2M/5M zone
+```
+
+**MESSY STRUCTURE:**
+```
+Structure looks unclear but checklist passes:
+└─ Take trade anyway (100% mechanical)
+```
+
+---
+
+## XII. COMPLETE ENTRY CHECKLIST
+
+### 12.1 LONG Entry Requirements
+
+```
+☐ 1. 1H DEMAND ZONE
+   ├─ At 1H (or higher) demand zone
+   ├─ Zone has tap(s) remaining
+   │  ├─ Regular zone: tap_count < 2
+   │  └─ CHoCH zone: tap_count < 3
+   ├─ Zone created with gap requirement met
+   │
+   └─ TRIGGER ZONE CHECK (Optional):
+      ├─ Trigger zone identified? Use trigger zone (priority)
+      ├─ Trigger zone used up? Use standard zone
+      ├─ No trigger zone? Use standard zone
+      └─ Track shared tap count if both exist
+
+☐ 2. 15M DEMAND ZONE INSIDE 1H ZONE ⚠️ CRITICAL
+   ├─ Identify 15M demand zone within 1H/trigger demand boundaries
+   ├─ Type must match (demand in demand)
+   ├─ IF NO 15M zone exists → STOP, no trade
+   └─ Price must tap 15M zone
+
+☐ 3. 15M STATE CHECK
+   ├─ Case A: 15M already in uptrend (skip to #5)
+   ├─ Case B: 15M + 1H both uptrend (skip to #5)
+   └─ Case C: 15M in downtrend (proceed to #4)
+
+☐ 4. CASE C REQUIREMENTS (if 15M opposite)
+   ├─ Incomplete 15M CHoCH pattern:
+   │  ├─ 15M made LL
+   │  ├─ 15M rallied to LH (15M supply zone)
+   │  ├─ 15M dropping back to LL
+   │  └─ Bodies respecting LL (staying above)
+   │     └─ Wicks can make new LL (if inside HTF zone)
+   │
+   └─ 15M CHoCH zone identified:
+      ├─ Drawn from LL → LH rally origin candle
+      ├─ High to low of origin candle
+      ├─ Separate from 15M demand zone
+      ├─ Has gap requirement met
+      └─ 2M/5M CHoCH will occur in this area
+
+☐ 5. 15M LIQUIDITY SWEPT
+   ├─ 15M low taken out (wick or body below)
+   ├─ Does NOT cause 15M CHoCH
+   ├─ Can be any visible 15M low (swing or internal)
+   └─ Must occur BEFORE 2M/5M CHoCH
+
+☐ 6. 2M/5M CHOCH BULLISH
+   ├─ Occurs AFTER liquidity swept
+   ├─ During final leg of incomplete pattern (if Case C)
+   ├─ Creates demand zone (consolidation before break)
+   ├─ Body closes above previous LH
+   └─ In CHoCH zone area (if Case C)
+
+☐ 7. EMA REQUIREMENTS (Check on 1H chart)
+   ├─ Select EMA: 3H printed in last 30min? Use EMA1, else EMA2
+   └─ EITHER:
+      ├─ Price touched EMA1/2 from below (last 2x 1H candles)
+      └─ OR price currently below EMA1/2
+
+☐ 8. PULLBACK TO 2M/5M ZONE
+   └─ Price returns to 2M/5M demand zone created by CHoCH
+
+☐ 9. FILTERS PASSED
+   ├─ Not within 30min of ECB/Fed/US Rates news
+   ├─ Within CET trading hours (07:30-14:30 or 16:00-19:30)
+   ├─ If 1H CHoCH with no mzone: 2 consecutive 1H BOS up occurred
+   └─ Not Friday after 19:00 (weekend close approaching)
+
+☐ 10. RISK CALCULATION
+   ├─ Baseline: 1.0%
+   ├─ EMA direction: Pro +0.0%, Counter -0.25%
+   ├─ 15M alignment: Pro (A/B) +0.25%, Counter (C) +0.0%
+   ├─ Unvalidated mzone: -0.25%, else +0.0%
+   └─ Final risk: 0.5% to 1.25%
+
+☐ 11. STOP LOSS PLACEMENT
+   ├─ Case C (incomplete pattern): 15M LL - 3.5 pips
+   └─ Case A/B (confirmed CHoCH): Most recent 15M HL - 3.5 pips
+
+☐ 12. ENTRY EXECUTION
+   └─ Enter LONG at 2M/5M demand zone tap
+```
+
+### 12.2 SHORT Entry Requirements
+
+```
+☐ 1. 1H SUPPLY ZONE
+   ├─ At 1H (or higher) supply zone
+   ├─ Zone has tap(s) remaining
+   │  ├─ Regular zone: tap_count < 2
+   │  └─ CHoCH zone: tap_count < 3
+   ├─ Zone created with gap requirement met
+   │
+   └─ TRIGGER ZONE CHECK (Optional):
+      ├─ Trigger zone identified? Use trigger zone (priority)
+      ├─ Trigger zone used up? Use standard zone
+      ├─ No trigger zone? Use standard zone
+      └─ Track shared tap count if both exist
+
+☐ 2. 15M SUPPLY ZONE INSIDE 1H ZONE ⚠️ CRITICAL
+   ├─ Identify 15M supply zone within 1H/trigger supply boundaries
+   ├─ Type must match (supply in supply)
+   ├─ IF NO 15M zone exists → STOP, no trade
+   └─ Price must tap 15M zone
+
+☐ 3. 15M STATE CHECK
+   ├─ Case A: 15M already in downtrend (skip to #5)
+   ├─ Case B: 15M + 1H both downtrend (skip to #5)
+   └─ Case C: 15M in uptrend (proceed to #4)
+
+☐ 4. CASE C REQUIREMENTS (if 15M opposite)
+   ├─ Incomplete 15M CHoCH pattern:
+   │  ├─ 15M made HH
+   │  ├─ 15M dropped to HL (15M demand zone)
+   │  ├─ 15M rallying back to HH
+   │  └─ Bodies respecting HH (staying below)
+   │     └─ Wicks can make new HH (if inside HTF zone)
+   │
+   └─ 15M CHoCH zone identified:
+      ├─ Drawn from HH → HL drop origin candle
+      ├─ High to low of origin candle
+      ├─ Separate from 15M supply zone
+      ├─ Has gap requirement met
+      └─ 2M/5M CHoCH will occur in this area
+
+☐ 5. 15M LIQUIDITY SWEPT
+   ├─ 15M high taken out (wick or body above)
+   ├─ Does NOT cause 15M CHoCH
+   ├─ Can be any visible 15M high (swing or internal)
+   └─ Must occur BEFORE 2M/5M CHoCH
+
+☐ 6. 2M/5M CHOCH BEARISH
+   ├─ Occurs AFTER liquidity swept
+   ├─ During final leg of incomplete pattern (if Case C)
+   ├─ Creates supply zone (consolidation before break)
+   ├─ Body closes below previous HL
+   └─ In CHoCH zone area (if Case C)
+
+☐ 7. EMA REQUIREMENTS (Check on 1H chart)
+   ├─ Select EMA: 3H printed in last 30min? Use EMA1, else EMA2
+   └─ EITHER:
+      ├─ Price touched EMA1/2 from above (last 2x 1H candles)
+      └─ OR price currently above EMA1/2
+
+☐ 8. PULLBACK TO 2M/5M ZONE
+   └─ Price returns to 2M/5M supply zone created by CHoCH
+
+☐ 9. FILTERS PASSED
+   ├─ Not within 30min of ECB/Fed/US Rates news
+   ├─ Within CET trading hours (07:30-14:30 or 16:00-19:30)
+   ├─ If 1H CHoCH with no mzone: 2 consecutive 1H BOS down occurred
+   └─ Not Friday after 19:00 (weekend close approaching)
+
+☐ 10. RISK CALCULATION
+   ├─ Baseline: 1.0%
+   ├─ EMA direction: Pro +0.0%, Counter -0.25%
+   ├─ 15M alignment: Pro (A/B) +0.25%, Counter (C) +0.0%
+   ├─ Unvalidated mzone: -0.25%, else +0.0%
+   └─ Final risk: 0.5% to 1.25%
+
+☐ 11. STOP LOSS PLACEMENT
+   ├─ Case C (incomplete pattern): 15M HH + 3.5 pips
+   └─ Case A/B (confirmed CHoCH): Most recent 15M LH + 3.5 pips
+
+☐ 12. ENTRY EXECUTION
+   └─ Enter SHORT at 2M/5M supply zone tap
+```
+
+---
+
+## XIII. POSITION MANAGEMENT SUMMARY
+
+### 13.1 Stop Loss Progression Quick Reference
+
+```
+PHASE 1: Initial Entry
+└─ 15M swing ± 3.5 pips
+
+PHASE 2: After 15M CHoCH
+└─ Keep Phase 1 stop
+
+PHASE 3: After first 15M BOS
+└─ 15M HL/LH ± 3.5 pips
+
+PHASE 4: After 1H BOS/CHoCH
+└─ 1H HL/LH ± 3.5 pips (scaled up)
+
+PHASE 5: Each 1H BOS thereafter
+└─ Trail to new 1H HL/LH ± 3.5 pips
+
+AT OPPOSING 1H ZONE:
+└─ Switch to 5M/2M HL/LH ± 3.5 pips (tight mode)
+
+IF BREAKS THROUGH OPPOSING ZONE:
+└─ Revert to Phase 4 or 3 (whichever was before)
+```
+
+### 13.2 Re-Entry After Stop Out
+
+```
+Get stopped out of position:
+
+WHAT CARRIES FORWARD:
+├─ 1H zone still valid (if taps remain)
+├─ 15M zone still valid
+├─ CHoCH zone still valid (unless broken through)
+├─ Liquidity sweep still valid
+└─ EMA requirements still met
+
+WHAT NEEDS TO BE FRESH:
+└─ Only need new 2M/5M CHoCH
+
+RE-ENTRY PROCESS:
+├─ Wait for new 2M/5M CHoCH in trade direction
+├─ Enter on pullback to new 2M/5M zone
+└─ Can re-enter immediately if conditions align
+```
+
+### 13.3 Multiple Valid Setups
+
+```
+TRADE ALL VALID SETUPS:
+├─ Both pairs valid → Trade both (full risk each)
+├─ Multiple zones same pair → Trade both (use separate accounts or wait for first to close)
+├─ Same direction both pairs → Trade both
+└─ All valid setups = equal quality
+
+MAXIMUM EXPOSURE:
+├─ 2 trades maximum (1 per pair)
+└─ Up to 2.5% total risk (1.25% × 2)
+```
+
+---
+
+## XIV. COMPLEXITY & IMPLEMENTATION NOTES
+
+### 14.1 System Characteristics
+
+**INSTITUTIONAL-LEVEL COMPLEXITY:**
+- 7-timeframe coordination
+- 4-layer nested zone validation (mzone → 1H → 15M → CHoCH → 2M/5M)
+- 15+ conditional rule layers
+- State-dependent logic (rules change based on context)
+- Independent signal tracking (zones and CHoCH separate)
+- Multi-stage validation sequence
+- Pattern recognition with precision body/wick distinctions
+- Dynamic stop loss progression (5 phases)
+- Context-aware risk adjustment
+- Anti-manipulation filters
+- Advanced trigger zone refinement (optional)
+
+**vs TYPICAL RETAIL SYSTEMS:**
+- Retail: 2-3 rules on 1 timeframe
+- This system: Multi-dimensional coordination across 7 timeframes
+
+### 14.2 Critical Success Factors
+
+1. **Precision Execution**
+   - Body vs wick distinction is life or death
+   - 3.5 pip gaps matter
+   - Tap counts must be tracked accurately
+   - Zone types must match exactly
+   - Trigger zone tap counts are shared
+
+2. **Context Awareness**
+   - Rules change inside vs outside HTF zones
+   - Case A/B/C require different approaches
+   - CHoCH zones only for Case C
+   - mzone relevance varies by scenario
+   - Trigger zones provide refinement when identified
+
+3. **Sequential Discipline**
+   - Order matters: Liquidity BEFORE 2M/5M CHoCH
+   - 15M zone BEFORE CHoCH zone consideration
+   - Can't skip steps in nested validation
+   - Trigger zone identification happens after main BOS
+
+4. **Independent Tracking**
+   - Zone state and CHoCH signals are separate
+   - Zone can flip while CHoCH stays valid
+   - Track both simultaneously
+   - Standard and trigger zones share tap count
+
+5. **Mechanical Adherence**
+   - 100% rule-based, zero discretion
+   - Checklist passes = take trade
+   - No "looks wrong" overrides
+   - Trust the system
+
+6. **Patience Required**
+   - Multiple filters = fewer trades
+   - High-quality setups only
+   - Wait for all conditions to align
+   - Better to miss than force
+
+### 14.3 Common Pitfalls to Avoid
+
+**TERMINOLOGY CONFUSION:**
+- "Gap" = separation between zone and candles (not price gap)
+- "Tap" = price movement only (not trade activity)
+- "mzone" = 1D/12H only (not 1H)
+- "Validation" = zone confirmed useful (not required for trading)
+- "Internal structure" = micro trends within larger moves
+
+**LOGICAL ERRORS:**
+- Taking trade without 15M zone inside 1H zone
+- Using CHoCH zone in Case A/B (only Case C needs it)
+- Moving stop before appropriate phase
+- Confusing 3.5 pip gap (stop loss) with gap requirement (zone creation)
+- Assuming all zones get 3 taps (only CHoCH zones)
+- Forgetting trigger zones share tap count with standard zones
+
+**EXECUTION MISTAKES:**
+- Entering before liquidity swept
+- Skipping EMA check on 1H chart
+- Trading during news blackout
+- Taking 3rd trade when limited to 1 per pair
+- Not checking if zone has taps remaining
+- Not tracking shared taps between standard and trigger zones
+
+### 14.4 Maintenance & Monitoring
+
+**DAILY TASKS:**
+- Check economic calendar for news events
+- Mark 30-min blackout windows
+- Verify trading session times
+- Monitor open positions for phase progression
+- Track zone tap counts on active zones
+- Track trigger zone shared tap counts
+
+**WEEKLY TASKS:**
+- Review all trades taken
+- Verify adherence to checklist
+- Check for rule violations
+- Update zone drawings on charts
+- Review stop loss progression accuracy
+- Analyze trigger zone identifications
+
+**MONTHLY TASKS:**
+- Analyze win rate by case type (A/B/C)
+- Review risk adjustment effectiveness
+- Check for edge degradation
+- Evaluate USDJPY session time effectiveness
+- Partnership performance review
+- Trigger zone effectiveness analysis
+
+**CONTINUOUS:**
+- Multi-timeframe chart monitoring
+- Zone tap count tracking (including shared counts)
+- CHoCH signal validity tracking
+- Structure break identification
+- Risk calculation before each entry
+- Trigger zone identification post-BOS
+
+### 14.5 Partnership Considerations
+
+**OBJECTIVE RULE SET:**
+- Every criterion is binary (yes/no)
+- No subjective interpretation needed
+- Both partners can verify independently
+- Minimizes emotional decisions
+- Clear accountability
+
+**TRADE AGREEMENT:**
+- Both must agree setup passes checklist
+- If disagreement: Skip trade
+- Document reasoning for analysis
+- Review missed opportunities weekly
+
+---
+
+## XV. FINAL REMINDERS
+
+### 15.1 Critical Non-Negotiables
+
+**THESE RULES ARE ABSOLUTE:**
+
+1. **No 15M zone inside 1H zone = No trade** (Period)
+2. **CHoCH zones ONLY for Case C** (Never A or B)
+3. **Liquidity MUST come before 2M/5M CHoCH** (Sequence matters)
+4. **3.5 pip gap on ALL stops** (Every phase, every time)
+5. **1 trade per pair maximum** (No exceptions)
+6. **Close all positions before Friday close** (No weekend holds)
+7. **100% mechanical system** (Checklist = trade, no discretion)
+8. **mzone = 1D or 12H only** (Not 1H)
+9. **Regular zones = 2 taps, CHoCH zones = 3 taps** (Track accurately)
+10. **Gap requirement for zone validity** (Must have separation)
+11. **Trigger zones take priority** (When identified)
+12. **Trigger and standard zones share tap count** (Tap one = tap both)
+
+### 15.2 Risk Disclaimer
+
+**UNDERSTAND THESE TRUTHS:**
+
+- No system is perfect
+- Markets produce unexpected behavior
+- Past performance ≠ future results
+- Complexity requires mastery
+- Mistakes cost money
+- Discipline is everything
+- Edge can degrade over time
+- Proper execution is critical
+- Partnership requires alignment
+- This is professional-level trading
+
+### 15.3 System Philosophy
+
+**THE EDGE:**
+```
+This system works because:
+├─ Multi-timeframe confluence reduces noise
+├─ Nested zones refine entries
+├─ Liquidity sweeps catch manipulation
+├─ Anti-fake-CHoCH filters avoid traps
+├─ Dynamic stops preserve capital
+├─ Risk adjustment optimizes sizing
+├─ Mechanical rules eliminate emotion
+└─ Trigger zones provide advanced refinement
+```
+
+**THE CHALLENGE:**
+```
+Executing this system requires:
+├─ Constant vigilance
+├─ Perfect rule adherence
+├─ Multi-chart monitoring
+├─ Pattern recognition mastery
+├─ Patience through dry spells
+├─ Discipline under pressure
+└─ Trust in the process
+```
+
+**THE COMMITMENT:**
+```
+Success demands:
+├─ Study until rules are second nature
+├─ Practice until execution is automatic
+├─ Review until mistakes disappear
+├─ Track until patterns emerge
+├─ Adapt when edge changes
+└─ Never compromise the system
+```
+
+---
+
+## XVI. TRIGGER ZONES (ADVANCED ZONE REFINEMENT)
+
+### 16.1 Concept & Definition
+
+**STANDARD ZONE vs TRIGGER ZONE:**
+
+```
+STANDARD ZONE:
+├─ Origin candle of move that caused main HTF BOS
+├─ Visible on HTF structure
+└─ Normally marked zone
+
+TRIGGER ZONE:
+├─ Hidden zone within internal structure
+├─ TRUE SOURCE of power behind standard zone
+├─ Caused internal/micro BOS (not main trend BOS)
+├─ More accurate entry location
+└─ Takes priority over standard zone
+
+RELATIONSHIP:
+Trigger Zone → Causes Internal BOS → Creates Momentum → 
+Standard Zone Forms → Standard Zone Causes Main HTF BOS
+```
+
+**Internal Structure:**
+- Micro trends visible within larger HTF moves
+- Example: 1H HL → HH move contains its own mini LL/HH structure
+- These micro trends = internal structure
+- Trigger zones cause BOS within this internal structure
+
+### 16.2 Identification Process (After the Fact)
+
+**CRITICAL:** Trigger zones can ONLY be identified AFTER main HTF BOS occurs
+
+**STEP 1: Mark Standard Zone**
+```
+Follow normal zone marking rules:
+├─ HTF trend causes BOS
+├─ Identify origin candle of move
+└─ Mark standard supply/demand zone
+```
+
+**STEP 2: Analyze Move That Created Standard Zone**
+```
+Example - 1H Downtrend:
+├─ HL at 1.0500
+├─ Rally to HH at 1.0550
+├─ Drop to LL at 1.0480 (1H BOS)
+└─ Standard supply marked at 1.0550
+```
+
+**STEP 3: Scan Internal Structure**
+```
+Within the HL → HH move (1.0500 → 1.0550 rally):
+├─ Identify micro trends/internal structure
+├─ Look for zones that caused BOS within internal structure
+├─ NOT zones that caused main 1H BOS
+└─ Zones that caused internal/micro BOS
+
+Example internal structure:
+├─ Micro LL: 1.0510
+├─ Micro HH: 1.0525
+├─ Micro pullback LL: 1.0522
+├─ Micro HH: 1.0540
+└─ Final push to 1.0550 (becomes standard zone)
+```
+
+**STEP 4: Identify Catalyst Zone**
+```
+Find the zone that was CATALYST for main zone's power:
+├─ Zone that caused internal BOS
+├─ Gave momentum that led to standard zone creation
+├─ This is the TRUE SOURCE of power
+└─ Mark this as TRIGGER ZONE
+
+Example:
+├─ Zone at 1.0518-1.0521 caused break above 1.0525 (internal BOS)
+├─ This created momentum for push to 1.0550
+└─ 1.0518-1.0521 = TRIGGER ZONE
+```
+
+**STEP 5: Mark Only One Trigger Zone**
+```
+If multiple zones in internal structure:
+└─ Mark ONLY the zone that was catalyst for main zone
+   └─ The zone that best explains power behind standard zone
+```
+
+### 16.3 Trigger Zone Requirements
+
+**SAME AS STANDARD ZONES:**
+
+✓ **Gap Requirement:** Must have gap between creation and first tap
+✓ **Drawing Rules:** Origin candle, high to low
+✓ **Timeframe:** Same timeframe as standard zone (1H trigger for 1H zone)
+✓ **Tap Limits:**
+  - Regular trigger zone: 2 taps maximum
+  - CHoCH trigger zone: 3 taps maximum
+
+**VALIDATION:**
+✓ Can only identify AFTER main HTF BOS occurs
+✓ Must have caused internal/micro BOS (not main trend BOS)
+✓ Must be catalyst explaining power of standard zone
+
+### 16.4 Preference Hierarchy (CRITICAL)
+
+**ALWAYS PREFER TRIGGER ZONE:**
+
+```
+If trigger zone identified and valid:
+└─ TRADE TRIGGER ZONE (priority)
+   └─ More accurate location
+   └─ True source of power
+
+If trigger zone NOT identified OR used up:
+└─ TRADE STANDARD ZONE (backup)
+
+RULE: Trigger zone takes absolute priority when available
+```
+
+**Decision Tree:**
+```
+Zone Analysis Complete:
+│
+├─ Trigger zone identified?
+│  │
+│  ├─ YES → Has taps remaining?
+│  │  │
+│  │  ├─ YES → USE TRIGGER ZONE ✓
+│  │  └─ NO → Use standard zone (if taps remain)
+│  │
+│  └─ NO → Use standard zone
+```
+
+### 16.5 Shared Tap System (CRITICAL)
+
+**TAPS ARE SHARED BETWEEN STANDARD AND TRIGGER ZONES:**
+
+```
+RULE: Tap of either zone = tap of BOTH zones
+
+Example Setup:
+├─ Standard zone: 1.0545-1.0550 (2 taps available)
+└─ Trigger zone: 1.0515-1.0520 (2 taps available)
+
+SCENARIO A:
+TAP 1: Price taps 1.0548 (standard zone)
+├─ Standard zone: 1 tap remaining
+├─ Trigger zone: 1 tap remaining (shared)
+└─ Both zones linked
+
+TAP 2: Price taps 1.0518 (trigger zone)
+├─ Standard zone: 0 taps remaining
+├─ Trigger zone: 0 taps remaining
+└─ BOTH zones expired - cannot trade this area anymore
+
+SCENARIO B:
+TAP 1: Price taps 1.0518 (trigger zone - preferred)
+├─ Trade from trigger zone ✓
+├─ Both zones: 1 tap remaining
+└─ Trigger zone used (more accurate entry)
+
+TAP 2: Price taps 1.0518 again (trigger zone)
+├─ Trade from trigger zone ✓
+├─ Both zones: 0 taps remaining
+└─ Area exhausted - both zones done
+```
+
+**TAP COUNT TRACKING:**
+- Count taps for the PAIR of zones, not individually
+- Mark both zones on chart with shared tap count
+- When one expires, both expire
+
+### 16.6 Trading Integration
+
+**NESTED STRUCTURE WITH TRIGGER ZONE:**
+
+```
+If trigger zone valid and being traded:
+│
+├─ TRIGGER ZONE = "1H zone" level
+├─ Find 15M zone INSIDE trigger zone boundaries
+├─ Price must tap 15M zone inside trigger zone
+├─ Follow normal Case A/B/C logic
+├─ Use trigger zone as HTF zone for all rules
+│
+If trigger zone used up:
+│
+├─ Fall back to STANDARD ZONE
+├─ Find 15M zone INSIDE standard zone boundaries
+└─ Continue normal trading process
+```
+
+**ENTRY CHECKLIST MODIFICATION:**
+
+```
+Standard Checklist:
+☐ 1. 1H zone identified
+
+Becomes:
+
+☐ 1. 1H zone identified
+   ├─ Trigger zone exists? Use trigger zone (priority)
+   ├─ Trigger zone used up? Use standard zone
+   └─ No trigger zone? Use standard zone
+   └─ Track shared tap count if both exist
+```
+
+**CASE A/B/C COMPATIBILITY:**
+- Works with all cases
+- Trigger zone becomes the "1H zone" in logic
+- All downstream requirements unchanged
+- 15M zone must be inside trigger zone (if using trigger)
+- CHoCH zone rules apply normally (Case C)
+
+### 16.7 System Status
+
+**OPTIONAL ANALYSIS:**
+- NOT mandatory to identify trigger zones
+- Can trade with standard zones only
+- Does NOT affect risk % calculation
+- Provides refined/more accurate entry zone when identified
+
+**USE CASES:**
+- Post-trade analysis: "Why did this zone work so well?"
+- Setup refinement: "Where's the true source of power?"
+- Entry optimization: "Can I get a better entry location?"
+
+### 16.8 Examples
+
+**EXAMPLE 1: 1H Supply Zone with Trigger**
+
+```
+1H UPTREND:
+
+Structure:
+├─ LL: 1.0480
+├─ Rally to HL: 1.0530
+├─ Rally to HH: 1.0580
+├─ Drop to HL: 1.0540 (holds)
+└─ Rally to HH: 1.0620 then drops to LL: 1.0470 (1H BOS)
+
+STANDARD ZONE:
+└─ 1.0615-1.0620 supply (caused 1H BOS to 1.0470)
+
+INTERNAL STRUCTURE (1.0540 → 1.0620 rally):
+├─ Micro LL: 1.0542
+├─ Micro HH: 1.0565
+├─ Micro pullback LL: 1.0558
+├─ Micro BOS above 1.0565 to 1.0580
+├─ Micro pullback LL: 1.0572
+└─ Final push: 1.0620
+
+TRIGGER ZONE IDENTIFICATION:
+├─ Zone at 1.0570-1.0574 caused internal BOS above 1.0565
+├─ This created momentum for 1.0620 push
+└─ TRIGGER ZONE: 1.0570-1.0574 supply
+
+TRADING:
+├─ Mark both: Standard (1.0615-1.0620) and Trigger (1.0570-1.0574)
+├─ PREFER trigger zone (1.0570-1.0574)
+├─ Find 15M supply inside 1.0570-1.0574 boundaries
+├─ Wait for tap, follow normal checklist
+└─ Taps are shared between both zones
+```
+
+**EXAMPLE 2: Trigger Zone Priority in Action**
+
+```
+Setup: 1H demand zone (uptrend reversal)
+
+Zones Identified:
+├─ Standard: 1.0495-1.0500 demand
+└─ Trigger: 1.0515-1.0520 demand (catalyst from internal structure)
+
+Price Action:
+├─ Price drops to 1.0518 (enters trigger zone)
+├─ Trade from trigger zone (preferred) ✓
+├─ Shared taps: 1 remaining for both zones
+│
+Later:
+├─ Price drops to 1.0497 (enters standard zone)
+├─ Standard zone entry NOT taken (trigger zone already used 1 tap)
+├─ Shared taps: 0 remaining
+└─ Both zones now expired
+
+CORRECT APPROACH:
+When trigger zone exists, focus monitoring on trigger zone first.
+Standard zone becomes backup if trigger zone missed.
+```
+
+**EXAMPLE 3: No Trigger Zone Identified**
+
+```
+1H DOWNTREND:
+
+Structure:
+├─ Clean impulsive move from 1.0600 → 1.0550 → 1.0500
+├─ No complex internal structure visible
+├─ Standard supply marked at 1.0598-1.0600
+└─ No trigger zone identified
+
+TRADING:
+├─ Trade standard zone normally
+├─ No trigger zone = no refinement needed
+└─ Follow standard nested structure rules
+```
+
+### 16.9 Marking Convention
+
+**ON CHART:**
+```
+Mark both zones when trigger identified:
+├─ Label: "STD" (standard) vs "TRG" (trigger)
+├─ Note shared tap count: "2/2 (shared)"
+├─ Highlight which zone being traded in current setup
+└─ Track taps together as single unit
+
+Visual:
+├─ Standard zone: Solid line
+├─ Trigger zone: Highlighted/bold (priority)
+└─ Both visible but trigger emphasized
+```
+
+### 16.10 Critical Reminders
+
+**ALWAYS REMEMBER:**
+1. Trigger zones identified AFTER main BOS (not before)
+2. Trigger zone ALWAYS takes priority over standard zone
+3. Taps are SHARED - tap one = tap both
+4. Only mark ONE trigger zone (the catalyst)
+5. Optional analysis - not mandatory
+6. Does not affect risk %
+7. Same timeframe as standard zone
+8. Must have caused internal BOS (not main trend BOS)
+9. When in doubt, trade standard zone - it still works
+10. Trigger zone provides refinement, not replacement of system
+
+---
+
+**END OF COMPLETE DOCUMENTATION**
+
+*Version 2.1 - January 30, 2026*
+*Complete system with trigger zones, all edge cases, exit strategies, and risk management*
+
+**Trade well. Trade smart. Respect the structure.**
+
+*"No 15M zone inside = No trade. CHoCH zones only for Case C. Liquidity before 2M/5M CHoCH. Trigger zones take priority. Period."*
+
+---
+
+**SYSTEM LOCKED. READY FOR IMPLEMENTATION.**
+
+**Good luck, Harvey. Your discipline will determine your success.**
+
+🎯
+;
+        // ==========================================
+
+        let currentChatId = null;
+        let conversations = JSON.parse(localStorage.getItem('atlas_conversations') || '{}');
+        let isProcessing = false;
+
+        // Auto-resize textarea
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.getElementById('messageInput');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            loadConversations();
+            if (Object.keys(conversations).length === 0) {
+                createNewChat();
+            } else {
+                const lastChat = Object.keys(conversations).sort((a, b) => 
+                    conversations[b].updatedAt - conversations[a].updatedAt
+                )[0];
+                loadChat(lastChat);
+            }
+        });
+
+        function createNewChat() {
+            const chatId = 'chat_' + Date.now();
+            conversations[chatId] = {
+                id: chatId,
+                title: 'New Chat',
+                messages: [],
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+            saveConversations();
+            loadChat(chatId);
+            loadConversations();
+        }
+
+        function loadChat(chatId) {
+            currentChatId = chatId;
+            const chat = conversations[chatId];
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML = '';
+            
+            if (chat.messages.length === 0) {
+                document.getElementById('emptyState').style.display = 'flex';
+            } else {
+                document.getElementById('emptyState').style.display = 'none';
+                chat.messages.forEach(msg => {
+                    appendMessage(msg.role, msg.content, false);
+                });
+            }
+            
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.chatId === chatId);
+            });
+            
+            scrollToBottom();
+        }
+
+        function loadConversations() {
+            const container = document.getElementById('conversationsList');
+            container.innerHTML = '';
+            
+            const sortedChats = Object.values(conversations).sort((a, b) => 
+                b.updatedAt - a.updatedAt
+            );
+            
+            sortedChats.forEach(chat => {
+                const div = document.createElement('div');
+                div.className = 'conversation-item' + (chat.id === currentChatId ? ' active' : '');
+                div.dataset.chatId = chat.id;
+                
+                const date = new Date(chat.updatedAt);
+                const now = new Date();
+                const isToday = date.toDateString() === now.toDateString();
+                const yesterday = new Date(now);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const isYesterday = date.toDateString() === yesterday.toDateString();
+                
+                let timeText;
+                if (isToday) {
+                    timeText = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                } else if (isYesterday) {
+                    timeText = 'Yesterday';
+                } else {
+                    timeText = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                }
+                
+                div.innerHTML = `
+                    <div class="conversation-content">
+                        <h3>${chat.title}</h3>
+                        <p>${timeText}</p>
+                    </div>
+                    <button class="delete-btn" onclick="deleteChat('${chat.id}', event)" title="Delete">×</button>
+                `;
+                div.onclick = (e) => {
+                    if (!e.target.classList.contains('delete-btn')) {
+                        loadChat(chat.id);
+                    }
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function deleteChat(chatId, event) {
+            event.stopPropagation();
+            if (confirm('Delete this conversation?')) {
+                delete conversations[chatId];
+                saveConversations();
+                if (chatId === currentChatId) {
+                    if (Object.keys(conversations).length === 0) {
+                        createNewChat();
+                    } else {
+                        loadChat(Object.keys(conversations)[0]);
+                    }
+                }
+                loadConversations();
+            }
+        }
+
+        function saveConversations() {
+            localStorage.setItem('atlas_conversations', JSON.stringify(conversations));
+        }
+
+        function updateChatTitle(chatId, firstMessage) {
+            const title = firstMessage.substring(0, 50) + (firstMessage.length > 50 ? '...' : '');
+            conversations[chatId].title = title;
+            saveConversations();
+            loadConversations();
+        }
+
+        function appendMessage(role, content, save = true) {
+            document.getElementById('emptyState').style.display = 'none';
+            
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const formattedContent = formatMessage(content);
+            messageDiv.innerHTML = formattedContent;
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+            
+            if (save && currentChatId) {
+                conversations[currentChatId].messages.push({ role, content });
+                conversations[currentChatId].updatedAt = Date.now();
+                
+                if (conversations[currentChatId].messages.length === 1) {
+                    updateChatTitle(currentChatId, content);
+                }
+                
+                saveConversations();
+            }
+        }
+
+        function formatMessage(text) {
+            // Format bold
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Format italic
+            text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Format code
+            text = text.replace(/`(.*?)`/g, '<code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:13px;color:#dc2626;font-family:monospace;">$1</code>');
+            // Format line breaks
+            text = text.replace(/\n/g, '<br>');
+            return text;
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('messages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            messagesContainer.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            if (isProcessing) return;
+            
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            input.value = '';
+            input.style.height = 'auto';
+            input.disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            isProcessing = true;
+            
+            appendMessage('user', message);
+            showTypingIndicator();
+            document.getElementById('apiStatus').textContent = 'Thinking...';
+            
+            try {
+                const response = await callGemini(message);
+                hideTypingIndicator();
+                appendMessage('assistant', response);
+                document.getElementById('apiStatus').textContent = 'Ready';
+                document.getElementById('apiStatus').className = 'api-status';
+            } catch (error) {
+                hideTypingIndicator();
+                appendMessage('system', 'Error: ' + error.message);
+                document.getElementById('apiStatus').textContent = 'Error';
+                document.getElementById('apiStatus').className = 'api-status error';
+            } finally {
+                input.disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                isProcessing = false;
+                input.focus();
+            }
+        }
+
+        async function callGemini(userMessage) {
+            const chat = conversations[currentChatId];
+            const systemPrompt = `You are ATLAS (Advanced Trading Logic Assistant System), a helpful trading assistant for Harvey's trading partner.
+
+Your role is to help validate setups, answer questions, and guide decision-making based on the complete trading system documented below. You are patient, educational, and clear. You explain WHY things work or don't work, referencing specific rules.
+
+CRITICAL CONTEXT AWARENESS:
+- You are NOT trading for the user - you are guiding them
+- Always ask clarifying questions when needed
+- Reference specific sections when explaining rules
+- Be conversational but professional
+- If user lacks information, ask for it rather than assuming
+
+When answering questions:
+1. Be specific and reference exact rules
+2. Ask clarifying questions when context missing
+3. Explain reasoning clearly
+4. Use checkmarks ✓ and crosses ✗ for clarity
+5. Break complex answers into steps
+6. Be encouraging but honest about mistakes
+
+Remember: Your goal is to help the user make correct decisions independently.
+
+HERE IS THE COMPLETE TRADING SYSTEM:
+
+${TRADING_SYSTEM}`;
+
+            const contents = [
+                {
+                    role: 'user',
+                    parts: [{ text: systemPrompt }]
+                },
+                {
+                    role: 'model',
+                    parts: [{ text: 'Understood. I am ATLAS, your trading assistant. I have the complete trading system loaded and I\'m ready to help validate setups, answer questions, and guide your decisions based on these exact rules. What do you need help with?' }]
+                }
+            ];
+            
+            const recentMessages = chat.messages.slice(-10);
+            recentMessages.forEach(msg => {
+                contents.push({
+                    role: msg.role === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.content }]
+                });
+            });
+            
+            contents.push({
+                role: 'user',
+                parts: [{ text: userMessage }]
+            });
+            
+            const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contents: contents,
+                    generationConfig: {
+                        temperature: 0.7,
+                        topK: 40,
+                        topP: 0.95,
+                        maxOutputTokens: 2048,
+                    },
+                    safetySettings: [
+                        {
+                            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                            threshold: "BLOCK_NONE"
+                        }
+                    ]
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error?.message || 'API request failed');
+            }
+            
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function sendExamplePrompt(prompt) {
+            document.getElementById('messageInput').value = prompt;
+            sendMessage();
+        }
+    </script>
+</body>
+</html>

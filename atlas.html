@@ -2619,6 +2619,7 @@ Visual:
 **Good luck, Harvey. Your discipline will determine your success.**
 
 🎯
+
     </script>
 
     <script>
@@ -2675,12 +2676,16 @@ Visual:
             currentChatId = chatId;
             const chat = conversations[chatId];
             const messagesContainer = document.getElementById('messages');
-            messagesContainer.innerHTML = '';
+            const emptyState = document.getElementById('emptyState');
+            
+            // Remove all messages but keep empty state
+            const messages = messagesContainer.querySelectorAll('.message, .typing-indicator');
+            messages.forEach(msg => msg.remove());
             
             if (chat.messages.length === 0) {
-                document.getElementById('emptyState').style.display = 'flex';
+                if (emptyState) emptyState.style.display = 'flex';
             } else {
-                document.getElementById('emptyState').style.display = 'none';
+                if (emptyState) emptyState.style.display = 'none';
                 chat.messages.forEach(msg => {
                     appendMessage(msg.role, msg.content, false);
                 });
@@ -2766,7 +2771,8 @@ Visual:
         }
 
         function appendMessage(role, content, save = true) {
-            document.getElementById('emptyState').style.display = 'none';
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) emptyState.style.display = 'none';
             
             const messagesContainer = document.getElementById('messages');
             const messageDiv = document.createElement('div');

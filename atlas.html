@@ -15,15 +15,15 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             height: 100vh;
             display: flex;
-            background: #f7f7f8;
-            color: #2d333a;
+            background: #1a1a1a;
+            color: #e5e5e5;
         }
 
-        /* Sidebar - Claude Style */
+        /* Sidebar - Claude Dark Mode */
         .sidebar {
             width: 260px;
-            background: #ffffff;
-            border-right: 1px solid #e5e7eb;
+            background: #212121;
+            border-right: 1px solid #3a3a3a;
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease;
@@ -31,13 +31,13 @@
 
         .sidebar-header {
             padding: 16px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #3a3a3a;
         }
 
         .new-chat-btn {
             width: 100%;
             padding: 10px 16px;
-            background: #2d6cea;
+            background: #ab7ff5;
             color: white;
             border: none;
             border-radius: 6px;
@@ -52,7 +52,7 @@
         }
 
         .new-chat-btn:hover {
-            background: #2557c4;
+            background: #9568e3;
         }
 
         .new-chat-btn:before {
@@ -81,11 +81,11 @@
         }
 
         .conversation-item:hover {
-            background: #f3f4f6;
+            background: #2a2a2a;
         }
 
         .conversation-item.active {
-            background: #eff3f8;
+            background: #3a3a3a;
         }
 
         .conversation-item:hover .delete-btn {
@@ -100,7 +100,7 @@
         .conversation-item h3 {
             font-size: 13px;
             font-weight: 400;
-            color: #2d333a;
+            color: #e5e5e5;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -109,7 +109,7 @@
 
         .conversation-item p {
             font-size: 11px;
-            color: #6b7280;
+            color: #8a8a8a;
         }
 
         .delete-btn {
@@ -117,7 +117,7 @@
             padding: 4px;
             border: none;
             background: transparent;
-            color: #6b7280;
+            color: #8a8a8a;
             cursor: pointer;
             border-radius: 4px;
             transition: all 0.15s;
@@ -126,26 +126,26 @@
         }
 
         .delete-btn:hover {
-            background: #fee;
-            color: #dc2626;
+            background: #4a2626;
+            color: #ff6b6b;
         }
 
-        /* Main Chat Container - Claude Style */
+        /* Main Chat Container - Claude Dark Mode */
         .chat-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #ffffff;
+            background: #1a1a1a;
         }
 
         .chat-header {
             padding: 16px 24px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #3a3a3a;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
+            background: #1f1f1f;
         }
 
         .atlas-logo {
@@ -158,7 +158,7 @@
         .atlas-logo h1 {
             font-size: 28px;
             font-weight: 600;
-            background: linear-gradient(135deg, #2d6cea 0%, #5b9cff 100%);
+            background: linear-gradient(135deg, #ab7ff5 0%, #c599ff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -167,7 +167,7 @@
 
         .atlas-logo p {
             font-size: 11px;
-            color: #6b7280;
+            color: #8a8a8a;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 500;
@@ -177,17 +177,17 @@
             font-size: 11px;
             padding: 4px 10px;
             border-radius: 12px;
-            background: #dcfce7;
-            color: #15803d;
+            background: #1a4d2e;
+            color: #66d9a8;
             font-weight: 500;
         }
 
         .api-status.error {
-            background: #fee2e2;
-            color: #dc2626;
+            background: #4d1a1a;
+            color: #ff6b6b;
         }
 
-        /* Messages Area - Claude Style */
+        /* Messages Area - Claude Dark Mode */
         .messages {
             flex: 1;
             overflow-y: auto;
@@ -195,7 +195,7 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            background: #fafafa;
+            background: #1a1a1a;
         }
 
         .message {
@@ -209,31 +209,31 @@
         }
 
         .message.user {
-            background: #eff3f8;
-            color: #2d333a;
-            border: 1px solid #e1e8f0;
+            background: #2d2438;
+            color: #e5e5e5;
+            border: 1px solid #3d3447;
         }
 
         .message.assistant {
-            background: #ffffff;
-            color: #2d333a;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            background: #212121;
+            color: #e5e5e5;
+            border: 1px solid #3a3a3a;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .message.system {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
+            background: #3d3020;
+            color: #f5d896;
+            border: 1px solid #4d4030;
             font-size: 14px;
             text-align: center;
         }
 
-        /* Input Area - Claude Style */
+        /* Input Area - Claude Dark Mode */
         .input-container {
             padding: 16px 24px 24px;
-            background: #ffffff;
-            border-top: 1px solid #e5e7eb;
+            background: #1a1a1a;
+            border-top: 1px solid #3a3a3a;
         }
 
         .input-wrapper {
@@ -241,15 +241,15 @@
             margin: 0 auto;
             display: flex;
             gap: 8px;
-            background: #ffffff;
-            border: 1.5px solid #d1d5db;
+            background: #2a2a2a;
+            border: 1.5px solid #3a3a3a;
             border-radius: 12px;
             padding: 4px;
             transition: border-color 0.2s;
         }
 
         .input-wrapper:focus-within {
-            border-color: #2d6cea;
+            border-color: #ab7ff5;
         }
 
         #messageInput {
@@ -257,7 +257,7 @@
             padding: 12px;
             background: transparent;
             border: none;
-            color: #2d333a;
+            color: #e5e5e5;
             font-size: 15px;
             resize: none;
             font-family: inherit;
@@ -267,12 +267,12 @@
         }
 
         #messageInput::placeholder {
-            color: #9ca3af;
+            color: #6a6a6a;
         }
 
         #sendBtn {
             padding: 10px 20px;
-            background: #2d6cea;
+            background: #ab7ff5;
             color: white;
             border: none;
             border-radius: 8px;
@@ -284,24 +284,24 @@
         }
 
         #sendBtn:hover:not(:disabled) {
-            background: #2557c4;
+            background: #9568e3;
         }
 
         #sendBtn:disabled {
-            background: #d1d5db;
+            background: #3a3a3a;
             cursor: not-allowed;
-            color: #9ca3af;
+            color: #6a6a6a;
         }
 
-        /* Typing Indicator - Claude Style */
+        /* Typing Indicator - Claude Dark Mode */
         .typing-indicator {
             max-width: 48rem;
             margin: 0 auto;
             width: 100%;
             padding: 16px 20px;
-            background: #ffffff;
+            background: #212121;
             border-radius: 8px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #3a3a3a;
             display: flex;
             gap: 6px;
             align-items: center;
@@ -310,7 +310,7 @@
         .typing-indicator span {
             width: 8px;
             height: 8px;
-            background: #2d6cea;
+            background: #ab7ff5;
             border-radius: 50%;
             animation: typing 1.4s infinite;
         }
@@ -334,7 +334,7 @@
             }
         }
 
-        /* Empty State - Claude Style */
+        /* Empty State - Claude Dark Mode */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -350,7 +350,7 @@
         .empty-state-logo {
             width: 64px;
             height: 64px;
-            background: linear-gradient(135deg, #2d6cea 0%, #5b9cff 100%);
+            background: linear-gradient(135deg, #ab7ff5 0%, #c599ff 100%);
             border-radius: 16px;
             display: flex;
             align-items: center;
@@ -363,14 +363,14 @@
 
         .empty-state h2 {
             font-size: 24px;
-            color: #2d333a;
+            color: #e5e5e5;
             margin-bottom: 8px;
             font-weight: 600;
         }
 
         .empty-state p {
             font-size: 15px;
-            color: #6b7280;
+            color: #8a8a8a;
             margin-bottom: 32px;
             text-align: center;
         }
@@ -384,8 +384,8 @@
 
         .example-prompt {
             padding: 16px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
+            background: #212121;
+            border: 1px solid #3a3a3a;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
@@ -393,26 +393,26 @@
         }
 
         .example-prompt:hover {
-            border-color: #2d6cea;
-            box-shadow: 0 4px 12px rgba(45, 108, 234, 0.1);
+            border-color: #ab7ff5;
+            box-shadow: 0 4px 12px rgba(171, 127, 245, 0.2);
             transform: translateY(-2px);
         }
 
         .example-prompt h4 {
-            color: #2d6cea;
+            color: #ab7ff5;
             font-size: 14px;
             font-weight: 500;
             margin-bottom: 6px;
         }
 
         .example-prompt p {
-            color: #6b7280;
+            color: #8a8a8a;
             font-size: 13px;
             line-height: 1.4;
             margin: 0;
         }
 
-        /* Scrollbar Styling */
+        /* Scrollbar Styling - Dark Mode */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -422,12 +422,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #d1d5db;
+            background: #3a3a3a;
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
+            background: #4a4a4a;
         }
 
         /* Mobile Responsive */
@@ -505,7 +505,6 @@
                 <textarea 
                     id="messageInput" 
                     placeholder="Ask ATLAS about setups, zones, risk management..."
-                    onkeydown="handleKeyPress(event)"
                     rows="1"
                 ></textarea>
                 <button id="sendBtn" onclick="sendMessage()">Send</button>
@@ -518,13 +517,9 @@
         const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
         
         // ==========================================
-        // PASTE YOUR COMPLETE V2.0 DOCUMENT HERE
+        // PASTE YOUR COMPLETE V2.1 DOCUMENT HERE
         // ==========================================
-        const TRADING_SYSTEM = `
-
-PASTE THE ENTIRE V2.0 MARKDOWN DOCUMENT HERE
-
-`# HARVEY'S COMPLETE MARKET STRUCTURE LOGIC SYSTEM
+        const TRADING_SYSTEM = `# HARVEY'S COMPLETE MARKET STRUCTURE LOGIC SYSTEM
 
 **Version 2.1 - Production Release with Trigger Zones**
 
@@ -2651,19 +2646,29 @@ Visual:
 **Good luck, Harvey. Your discipline will determine your success.**
 
 🎯
-;
+`;
         // ==========================================
 
         let currentChatId = null;
         let conversations = JSON.parse(localStorage.getItem('atlas_conversations') || '{}');
         let isProcessing = false;
 
-        // Auto-resize textarea
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             const textarea = document.getElementById('messageInput');
+            
+            // Auto-resize textarea
             textarea.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
+            });
+            
+            // Handle Enter key
+            textarea.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                }
             });
 
             loadConversations();
@@ -2811,13 +2816,9 @@ Visual:
         }
 
         function formatMessage(text) {
-            // Format bold
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            // Format italic
             text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-            // Format code
-            text = text.replace(/`(.*?)`/g, '<code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:13px;color:#dc2626;font-family:monospace;">$1</code>');
-            // Format line breaks
+            text = text.replace(/`(.*?)`/g, '<code style="background:#3a3a3a;padding:2px 6px;border-radius:4px;font-size:13px;color:#ff8787;font-family:monospace;">$1</code>');
             text = text.replace(/\n/g, '<br>');
             return text;
         }
@@ -2959,13 +2960,6 @@ ${TRADING_SYSTEM}`;
             
             const data = await response.json();
             return data.candidates[0].content.parts[0].text;
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            }
         }
 
         function sendExamplePrompt(prompt) {

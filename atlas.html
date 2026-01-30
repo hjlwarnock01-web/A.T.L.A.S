@@ -5,435 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATLAS - Advanced Trading Logic Assistant System</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            background: #1a1a1a;
-            color: #e5e5e5;
-        }
-
-        .sidebar {
-            width: 260px;
-            background: #212121;
-            border-right: 1px solid #3a3a3a;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header {
-            padding: 16px;
-            border-bottom: 1px solid #3a3a3a;
-        }
-
-        .new-chat-btn {
-            width: 100%;
-            padding: 10px 16px;
-            background: #ab7ff5;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
-
-        .new-chat-btn:hover {
-            background: #9568e3;
-        }
-
-        .conversations {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px;
-        }
-
-        .conversation-item {
-            padding: 10px 12px;
-            margin: 2px 0;
-            background: transparent;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.15s;
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .conversation-item:hover {
-            background: #2a2a2a;
-        }
-
-        .conversation-item.active {
-            background: #3a3a3a;
-        }
-
-        .conversation-item:hover .delete-btn {
-            opacity: 1;
-        }
-
-        .conversation-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .conversation-item h3 {
-            font-size: 13px;
-            font-weight: 400;
-            color: #e5e5e5;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            margin-bottom: 2px;
-        }
-
-        .conversation-item p {
-            font-size: 11px;
-            color: #8a8a8a;
-        }
-
-        .delete-btn {
-            opacity: 0;
-            padding: 4px;
-            border: none;
-            background: transparent;
-            color: #8a8a8a;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.15s;
-            font-size: 16px;
-            line-height: 1;
-        }
-
-        .delete-btn:hover {
-            background: #4a2626;
-            color: #ff6b6b;
-        }
-
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #1a1a1a;
-        }
-
-        .chat-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid #3a3a3a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            background: #1f1f1f;
-        }
-
-        .atlas-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .atlas-logo h1 {
-            font-size: 28px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #ab7ff5 0%, #c599ff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 2px;
-        }
-
-        .atlas-logo p {
-            font-size: 11px;
-            color: #8a8a8a;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 500;
-        }
-
-        .api-status {
-            font-size: 11px;
-            padding: 4px 10px;
-            border-radius: 12px;
-            background: #1a4d2e;
-            color: #66d9a8;
-            font-weight: 500;
-        }
-
-        .api-status.error {
-            background: #4d1a1a;
-            color: #ff6b6b;
-        }
-
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            background: #1a1a1a;
-        }
-
-        .message {
-            max-width: 48rem;
-            padding: 16px 20px;
-            border-radius: 8px;
-            line-height: 1.6;
-            font-size: 15px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .message.user {
-            background: #2d2438;
-            color: #e5e5e5;
-            border: 1px solid #3d3447;
-        }
-
-        .message.assistant {
-            background: #212121;
-            color: #e5e5e5;
-            border: 1px solid #3a3a3a;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .message.system {
-            background: #3d3020;
-            color: #f5d896;
-            border: 1px solid #4d4030;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        .input-container {
-            padding: 16px 24px 24px;
-            background: #1a1a1a;
-            border-top: 1px solid #3a3a3a;
-        }
-
-        .input-wrapper {
-            max-width: 48rem;
-            margin: 0 auto;
-            display: flex;
-            gap: 8px;
-            background: #2a2a2a;
-            border: 1.5px solid #3a3a3a;
-            border-radius: 12px;
-            padding: 4px;
-            transition: border-color 0.2s;
-        }
-
-        .input-wrapper:focus-within {
-            border-color: #ab7ff5;
-        }
-
-        #messageInput {
-            flex: 1;
-            padding: 12px;
-            background: transparent;
-            border: none;
-            color: #e5e5e5;
-            font-size: 15px;
-            resize: none;
-            font-family: inherit;
-            min-height: 24px;
-            max-height: 200px;
-            outline: none;
-        }
-
-        #messageInput::placeholder {
-            color: #6a6a6a;
-        }
-
-        #sendBtn {
-            padding: 10px 20px;
-            background: #ab7ff5;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background 0.2s;
-            align-self: flex-end;
-        }
-
-        #sendBtn:hover:not(:disabled) {
-            background: #9568e3;
-        }
-
-        #sendBtn:disabled {
-            background: #3a3a3a;
-            cursor: not-allowed;
-            color: #6a6a6a;
-        }
-
-        .typing-indicator {
-            max-width: 48rem;
-            margin: 0 auto;
-            width: 100%;
-            padding: 16px 20px;
-            background: #212121;
-            border-radius: 8px;
-            border: 1px solid #3a3a3a;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: #ab7ff5;
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% { 
-                transform: translateY(0);
-                opacity: 0.5;
-            }
-            30% { 
-                transform: translateY(-8px);
-                opacity: 1;
-            }
-        }
-
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 40px 24px;
-            max-width: 48rem;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .empty-state-logo {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, #ab7ff5 0%, #c599ff 100%);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 24px;
-            font-size: 32px;
-            color: white;
-            font-weight: 600;
-        }
-
-        .empty-state h2 {
-            font-size: 24px;
-            color: #e5e5e5;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .empty-state p {
-            font-size: 15px;
-            color: #8a8a8a;
-            margin-bottom: 32px;
-            text-align: center;
-        }
-
-        .example-prompts {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 12px;
-            width: 100%;
-        }
-
-        .example-prompt {
-            padding: 16px;
-            background: #212121;
-            border: 1px solid #3a3a3a;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-        }
-
-        .example-prompt:hover {
-            border-color: #ab7ff5;
-            box-shadow: 0 4px 12px rgba(171, 127, 245, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .example-prompt h4 {
-            color: #ab7ff5;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 6px;
-        }
-
-        .example-prompt p {
-            color: #8a8a8a;
-            font-size: 13px;
-            line-height: 1.4;
-            margin: 0;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #3a3a3a;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4a4a4a;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                z-index: 1000;
-                transform: translateX(-100%);
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .message {
-                max-width: 100%;
-            }
-
-            .example-prompts {
-                grid-template-columns: 1fr;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; height: 100vh; display: flex; background: #1a1a1a; color: #e5e5e5; }
+        .sidebar { width: 260px; background: #212121; border-right: 1px solid #3a3a3a; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 16px; border-bottom: 1px solid #3a3a3a; }
+        .new-chat-btn { width: 100%; padding: 10px 16px; background: #ab7ff5; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s; }
+        .new-chat-btn:hover { background: #9568e3; }
+        .conversations { flex: 1; overflow-y: auto; padding: 8px; }
+        .conversation-item { padding: 10px 12px; margin: 2px 0; background: transparent; border-radius: 6px; cursor: pointer; transition: background 0.15s; position: relative; display: flex; align-items: center; gap: 8px; }
+        .conversation-item:hover { background: #2a2a2a; }
+        .conversation-item.active { background: #3a3a3a; }
+        .conversation-item:hover .delete-btn { opacity: 1; }
+        .conversation-content { flex: 1; min-width: 0; }
+        .conversation-item h3 { font-size: 13px; font-weight: 400; color: #e5e5e5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 2px; }
+        .conversation-item p { font-size: 11px; color: #8a8a8a; }
+        .delete-btn { opacity: 0; padding: 4px; border: none; background: transparent; color: #8a8a8a; cursor: pointer; border-radius: 4px; transition: all 0.15s; font-size: 16px; line-height: 1; }
+        .delete-btn:hover { background: #4a2626; color: #ff6b6b; }
+        .chat-container { flex: 1; display: flex; flex-direction: column; background: #1a1a1a; }
+        .chat-header { padding: 16px 24px; border-bottom: 1px solid #3a3a3a; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #1f1f1f; }
+        .atlas-logo { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .atlas-logo h1 { font-size: 28px; font-weight: 600; background: linear-gradient(135deg, #ab7ff5 0%, #c599ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px; }
+        .atlas-logo p { font-size: 11px; color: #8a8a8a; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+        .api-status { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: #1a4d2e; color: #66d9a8; font-weight: 500; }
+        .api-status.error { background: #4d1a1a; color: #ff6b6b; }
+        .messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; background: #1a1a1a; }
+        .message { max-width: 48rem; padding: 16px 20px; border-radius: 8px; line-height: 1.6; font-size: 15px; margin: 0 auto; width: 100%; }
+        .message.user { background: #2d2438; color: #e5e5e5; border: 1px solid #3d3447; }
+        .message.assistant { background: #212121; color: #e5e5e5; border: 1px solid #3a3a3a; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
+        .message.system { background: #3d3020; color: #f5d896; border: 1px solid #4d4030; font-size: 14px; text-align: center; }
+        .input-container { padding: 16px 24px 24px; background: #1a1a1a; border-top: 1px solid #3a3a3a; }
+        .input-wrapper { max-width: 48rem; margin: 0 auto; display: flex; gap: 8px; background: #2a2a2a; border: 1.5px solid #3a3a3a; border-radius: 12px; padding: 4px; transition: border-color 0.2s; }
+        .input-wrapper:focus-within { border-color: #ab7ff5; }
+        #messageInput { flex: 1; padding: 12px; background: transparent; border: none; color: #e5e5e5; font-size: 15px; resize: none; font-family: inherit; min-height: 24px; max-height: 200px; outline: none; }
+        #messageInput::placeholder { color: #6a6a6a; }
+        #sendBtn { padding: 10px 20px; background: #ab7ff5; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s; align-self: flex-end; }
+        #sendBtn:hover:not(:disabled) { background: #9568e3; }
+        #sendBtn:disabled { background: #3a3a3a; cursor: not-allowed; color: #6a6a6a; }
+        .typing-indicator { max-width: 48rem; margin: 0 auto; width: 100%; padding: 16px 20px; background: #212121; border-radius: 8px; border: 1px solid #3a3a3a; display: flex; gap: 6px; align-items: center; }
+        .typing-indicator span { width: 8px; height: 8px; background: #ab7ff5; border-radius: 50%; animation: typing 1.4s infinite; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-8px); opacity: 1; } }
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px 24px; max-width: 48rem; margin: 0 auto; width: 100%; }
+        .empty-state-logo { width: 64px; height: 64px; background: linear-gradient(135deg, #ab7ff5 0%, #c599ff 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; font-size: 32px; color: white; font-weight: 600; }
+        .empty-state h2 { font-size: 24px; color: #e5e5e5; margin-bottom: 8px; font-weight: 600; }
+        .empty-state p { font-size: 15px; color: #8a8a8a; margin-bottom: 32px; text-align: center; }
+        .example-prompts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; width: 100%; }
+        .example-prompt { padding: 16px; background: #212121; border: 1px solid #3a3a3a; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .example-prompt:hover { border-color: #ab7ff5; box-shadow: 0 4px 12px rgba(171, 127, 245, 0.2); transform: translateY(-2px); }
+        .example-prompt h4 { color: #ab7ff5; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+        .example-prompt p { color: #8a8a8a; font-size: 13px; line-height: 1.4; margin: 0; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4a4a4a; }
     </style>
 </head>
 <body>
@@ -443,7 +68,6 @@
         </div>
         <div class="conversations" id="conversationsList"></div>
     </div>
-
     <div class="chat-container">
         <div class="chat-header">
             <div class="atlas-logo">
@@ -452,45 +76,38 @@
             </div>
             <div class="api-status" id="apiStatus">Ready</div>
         </div>
-        
         <div class="messages" id="messages">
             <div class="empty-state" id="emptyState">
                 <div class="empty-state-logo">A</div>
                 <h2>Hey! I'm ATLAS</h2>
-                <p>Your intelligent trading system assistant. I can help validate setups, answer questions about zones, CHoCH patterns, risk management, and guide you through complex trading decisions.</p>
+                <p>Your intelligent trading system assistant.</p>
                 <div class="example-prompts">
                     <div class="example-prompt" onclick="sendExamplePrompt('Is this a valid 1H demand zone?')">
                         <h4>📊 Zone Validation</h4>
-                        <p>Verify if zones meet all requirements and have taps remaining</p>
+                        <p>Verify if zones meet requirements</p>
                     </div>
                     <div class="example-prompt" onclick="sendExamplePrompt('Should I enter this trade?')">
                         <h4>✅ Entry Checklist</h4>
-                        <p>Walk through the complete validation process step-by-step</p>
+                        <p>Walk through validation step-by-step</p>
                     </div>
                     <div class="example-prompt" onclick="sendExamplePrompt('Where should my stop loss be?')">
                         <h4>🎯 Stop Loss Guidance</h4>
-                        <p>Calculate precise stop placement based on your current phase</p>
+                        <p>Calculate precise stop placement</p>
                     </div>
                     <div class="example-prompt" onclick="sendExamplePrompt('What risk % should I use?')">
                         <h4>💰 Risk Calculator</h4>
-                        <p>Determine exact risk percentage with all adjustments</p>
+                        <p>Determine exact risk percentage</p>
                     </div>
                 </div>
             </div>
         </div>
-
         <div class="input-container">
             <div class="input-wrapper">
-                <textarea 
-                    id="messageInput" 
-                    placeholder="Ask ATLAS about setups, zones, risk management..."
-                    rows="1"
-                ></textarea>
+                <textarea id="messageInput" placeholder="Ask ATLAS about setups, zones, risk management..." rows="1"></textarea>
                 <button id="sendBtn" onclick="sendMessage()">Send</button>
             </div>
         </div>
     </div>
-
     <script id="tradingSystem" type="text/plain">
 # HARVEY'S COMPLETE MARKET STRUCTURE LOGIC SYSTEM
 
@@ -2621,181 +2238,115 @@ Visual:
 🎯
 
     </script>
-
     <script>
         const GEMINI_API_KEY = 'AIzaSyD2fvx4wUl3h68r9M2kMrkL7QZIZ0mnD-k';
-        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-        
+        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
         const TRADING_SYSTEM = document.getElementById('tradingSystem').textContent.trim();
-
         let currentChatId = null;
         let conversations = JSON.parse(localStorage.getItem('atlas_conversations') || '{}');
         let isProcessing = false;
-
         document.addEventListener('DOMContentLoaded', function() {
             const textarea = document.getElementById('messageInput');
-            
             textarea.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
             });
-            
             textarea.addEventListener('keydown', function(event) {
                 if (event.key === 'Enter' && !event.shiftKey) {
                     event.preventDefault();
                     sendMessage();
                 }
             });
-
             loadConversations();
             if (Object.keys(conversations).length === 0) {
                 createNewChat();
             } else {
-                const lastChat = Object.keys(conversations).sort((a, b) => 
-                    conversations[b].updatedAt - conversations[a].updatedAt
-                )[0];
+                const lastChat = Object.keys(conversations).sort((a, b) => conversations[b].updatedAt - conversations[a].updatedAt)[0];
                 loadChat(lastChat);
             }
         });
-
         function createNewChat() {
             const chatId = 'chat_' + Date.now();
-            conversations[chatId] = {
-                id: chatId,
-                title: 'New Chat',
-                messages: [],
-                createdAt: Date.now(),
-                updatedAt: Date.now()
-            };
+            conversations[chatId] = { id: chatId, title: 'New Chat', messages: [], createdAt: Date.now(), updatedAt: Date.now() };
             saveConversations();
             loadChat(chatId);
             loadConversations();
         }
-
         function loadChat(chatId) {
             currentChatId = chatId;
             const chat = conversations[chatId];
             const messagesContainer = document.getElementById('messages');
             const emptyState = document.getElementById('emptyState');
-            
-            // Remove all messages but keep empty state
             const messages = messagesContainer.querySelectorAll('.message, .typing-indicator');
             messages.forEach(msg => msg.remove());
-            
             if (chat.messages.length === 0) {
                 if (emptyState) emptyState.style.display = 'flex';
             } else {
                 if (emptyState) emptyState.style.display = 'none';
-                chat.messages.forEach(msg => {
-                    appendMessage(msg.role, msg.content, false);
-                });
+                chat.messages.forEach(msg => { appendMessage(msg.role, msg.content, false); });
             }
-            
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                item.classList.toggle('active', item.dataset.chatId === chatId);
-            });
-            
+            document.querySelectorAll('.conversation-item').forEach(item => { item.classList.toggle('active', item.dataset.chatId === chatId); });
             scrollToBottom();
         }
-
         function loadConversations() {
             const container = document.getElementById('conversationsList');
             container.innerHTML = '';
-            
-            const sortedChats = Object.values(conversations).sort((a, b) => 
-                b.updatedAt - a.updatedAt
-            );
-            
+            const sortedChats = Object.values(conversations).sort((a, b) => b.updatedAt - a.updatedAt);
             sortedChats.forEach(chat => {
                 const div = document.createElement('div');
                 div.className = 'conversation-item' + (chat.id === currentChatId ? ' active' : '');
                 div.dataset.chatId = chat.id;
-                
                 const date = new Date(chat.updatedAt);
                 const now = new Date();
                 const isToday = date.toDateString() === now.toDateString();
                 const yesterday = new Date(now);
                 yesterday.setDate(yesterday.getDate() - 1);
                 const isYesterday = date.toDateString() === yesterday.toDateString();
-                
                 let timeText;
-                if (isToday) {
-                    timeText = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                } else if (isYesterday) {
-                    timeText = 'Yesterday';
-                } else {
-                    timeText = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-                }
-                
-                div.innerHTML = `
-                    <div class="conversation-content">
-                        <h3>${chat.title}</h3>
-                        <p>${timeText}</p>
-                    </div>
-                    <button class="delete-btn" onclick="deleteChat('${chat.id}', event)" title="Delete">×</button>
-                `;
-                div.onclick = (e) => {
-                    if (!e.target.classList.contains('delete-btn')) {
-                        loadChat(chat.id);
-                    }
-                };
+                if (isToday) { timeText = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } 
+                else if (isYesterday) { timeText = 'Yesterday'; } 
+                else { timeText = date.toLocaleDateString([], { month: 'short', day: 'numeric' }); }
+                div.innerHTML = `<div class="conversation-content"><h3>${chat.title}</h3><p>${timeText}</p></div><button class="delete-btn" onclick="deleteChat('${chat.id}', event)" title="Delete">×</button>`;
+                div.onclick = (e) => { if (!e.target.classList.contains('delete-btn')) { loadChat(chat.id); } };
                 container.appendChild(div);
             });
         }
-
         function deleteChat(chatId, event) {
             event.stopPropagation();
             if (confirm('Delete this conversation?')) {
                 delete conversations[chatId];
                 saveConversations();
                 if (chatId === currentChatId) {
-                    if (Object.keys(conversations).length === 0) {
-                        createNewChat();
-                    } else {
-                        loadChat(Object.keys(conversations)[0]);
-                    }
+                    if (Object.keys(conversations).length === 0) { createNewChat(); } 
+                    else { loadChat(Object.keys(conversations)[0]); }
                 }
                 loadConversations();
             }
         }
-
-        function saveConversations() {
-            localStorage.setItem('atlas_conversations', JSON.stringify(conversations));
-        }
-
+        function saveConversations() { localStorage.setItem('atlas_conversations', JSON.stringify(conversations)); }
         function updateChatTitle(chatId, firstMessage) {
             const title = firstMessage.substring(0, 50) + (firstMessage.length > 50 ? '...' : '');
             conversations[chatId].title = title;
             saveConversations();
             loadConversations();
         }
-
         function appendMessage(role, content, save = true) {
             const emptyState = document.getElementById('emptyState');
             if (emptyState) emptyState.style.display = 'none';
-            
             const messagesContainer = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
-            
             const formattedContent = formatMessage(content);
             messageDiv.innerHTML = formattedContent;
-            
             messagesContainer.appendChild(messageDiv);
             scrollToBottom();
-            
             if (save && currentChatId) {
                 conversations[currentChatId].messages.push({ role, content });
                 conversations[currentChatId].updatedAt = Date.now();
-                
-                if (conversations[currentChatId].messages.length === 1) {
-                    updateChatTitle(currentChatId, content);
-                }
-                
+                if (conversations[currentChatId].messages.length === 1) { updateChatTitle(currentChatId, content); }
                 saveConversations();
             }
         }
-
         function formatMessage(text) {
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
@@ -2803,7 +2354,6 @@ Visual:
             text = text.replace(/\n/g, '<br>');
             return text;
         }
-
         function showTypingIndicator() {
             const messagesContainer = document.getElementById('messages');
             const typingDiv = document.createElement('div');
@@ -2813,35 +2363,21 @@ Visual:
             messagesContainer.appendChild(typingDiv);
             scrollToBottom();
         }
-
-        function hideTypingIndicator() {
-            const indicator = document.getElementById('typingIndicator');
-            if (indicator) indicator.remove();
-        }
-
-        function scrollToBottom() {
-            const messagesContainer = document.getElementById('messages');
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
+        function hideTypingIndicator() { const indicator = document.getElementById('typingIndicator'); if (indicator) indicator.remove(); }
+        function scrollToBottom() { const messagesContainer = document.getElementById('messages'); messagesContainer.scrollTop = messagesContainer.scrollHeight; }
         async function sendMessage() {
             if (isProcessing) return;
-            
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
-            
             if (!message) return;
-            
             input.value = '';
             input.style.height = 'auto';
             input.disabled = true;
             document.getElementById('sendBtn').disabled = true;
             isProcessing = true;
-            
             appendMessage('user', message);
             showTypingIndicator();
             document.getElementById('apiStatus').textContent = 'Thinking...';
-            
             try {
                 const response = await callGemini(message);
                 hideTypingIndicator();
@@ -2860,7 +2396,6 @@ Visual:
                 input.focus();
             }
         }
-
         async function callGemini(userMessage) {
             const chat = conversations[currentChatId];
             const systemPrompt = `You are ATLAS (Advanced Trading Logic Assistant System), a helpful trading assistant.
@@ -2870,66 +2405,27 @@ Your role is to help validate setups, answer questions, and guide decision-makin
 HERE IS THE COMPLETE TRADING SYSTEM:
 
 ${TRADING_SYSTEM}`;
-
             const contents = [
-                {
-                    role: 'user',
-                    parts: [{ text: systemPrompt }]
-                },
-                {
-                    role: 'model',
-                    parts: [{ text: 'Understood. I am ATLAS. What do you need help with?' }]
-                }
+                { role: 'user', parts: [{ text: systemPrompt }] },
+                { role: 'model', parts: [{ text: 'Understood. I am ATLAS. What do you need help with?' }] }
             ];
-            
             const recentMessages = chat.messages.slice(-10);
-            recentMessages.forEach(msg => {
-                contents.push({
-                    role: msg.role === 'user' ? 'user' : 'model',
-                    parts: [{ text: msg.content }]
-                });
-            });
-            
-            contents.push({
-                role: 'user',
-                parts: [{ text: userMessage }]
-            });
-            
+            recentMessages.forEach(msg => { contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts: [{ text: msg.content }] }); });
+            contents.push({ role: 'user', parts: [{ text: userMessage }] });
             const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: contents,
-                    generationConfig: {
-                        temperature: 0.7,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 2048,
-                    },
-                    safetySettings: [
-                        {
-                            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                            threshold: "BLOCK_NONE"
-                        }
-                    ]
+                    generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048 },
+                    safetySettings: [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }]
                 })
             });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'API request failed');
-            }
-            
+            if (!response.ok) { const error = await response.json(); throw new Error(error.error?.message || 'API request failed'); }
             const data = await response.json();
             return data.candidates[0].content.parts[0].text;
         }
-
-        function sendExamplePrompt(prompt) {
-            document.getElementById('messageInput').value = prompt;
-            sendMessage();
-        }
+        function sendExamplePrompt(prompt) { document.getElementById('messageInput').value = prompt; sendMessage(); }
     </script>
 </body>
 </html>

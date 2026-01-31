@@ -2239,13 +2239,7 @@ Visual:
 
     </script>
     <script>
-        // ============================================
-        // PASTE YOUR CLOUDFLARE WORKER URL HERE:
-        // Example: https://atlas.YOUR-USERNAME.workers.dev
-        // ============================================
         const WORKER_URL = 'https://atlas-proxy.hjlwarnock01.workers.dev';
-        // ============================================
-        
         const TRADING_SYSTEM = document.getElementById('tradingSystem').textContent.trim();
         let currentChatId = null;
         let conversations = JSON.parse(localStorage.getItem('atlas_conversations') || '{}');
@@ -2403,32 +2397,59 @@ Visual:
         }
         async function callGemini(userMessage) {
             const chat = conversations[currentChatId];
-            const systemPrompt = `You are ATLAS (Advanced Trading Logic Assistant System), a helpful trading assistant.
+            const systemPrompt = `You are ATLAS - a friendly, conversational trading assistant. Your job is to help traders make decisions, NOT to dump documentation.
 
-Your role is to help validate setups, answer questions, and guide decision-making based on the complete trading system documented below.
+CRITICAL RULES:
+1. Be CONVERSATIONAL - talk like a helpful friend, not a textbook
+2. Keep responses SHORT (2-4 sentences max unless asked for details)
+3. Ask follow-up questions to understand what they REALLY need
+4. Only give relevant info - don't dump entire sections
+5. Use simple language - avoid jargon unless necessary
 
-HERE IS THE COMPLETE TRADING SYSTEM:
+EXAMPLE GOOD RESPONSES:
+User: "Is this a valid 1H demand zone?"
+You: "Let me help you check! Can you tell me:
+- Is price currently sitting in the zone?
+- Did it form after a clean downmove?
+- Are the EMAs showing the right alignment?"
 
-${TRADING_SYSTEM}`;
+User: "Should I enter this trade?"
+You: "Let's walk through the checklist together. First, is this a fresh zone that hasn't been tested yet?"
+
+User: "Where should my stop loss be?"
+You: "For demand zones, place your stop 2-5 pips below the zone. For supply zones, 2-5 pips above. What type of zone are you working with?"
+
+EXAMPLE BAD RESPONSES (NEVER DO THIS):
+- Dumping 10 numbered steps
+- Copying entire sections from the documentation
+- Using headers like "1. SUPPLY ZONE (8+ months)" 
+- Overwhelming with technical details
+
+You have access to the complete trading system, but ONLY reference specific details when directly asked.
+
+Trading System Reference:
+${TRADING_SYSTEM}
+
+Remember: You're a helpful assistant having a conversation, not a documentation printer!`;
+            
             const contents = [
                 { role: 'user', parts: [{ text: systemPrompt }] },
-                { role: 'model', parts: [{ text: 'Understood. I am ATLAS. What do you need help with?' }] }
+                { role: 'model', parts: [{ text: 'Got it! I\'m here to help you with your trades. What do you need?' }] }
             ];
             const recentMessages = chat.messages.slice(-10);
             recentMessages.forEach(msg => { contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts: [{ text: msg.content }] }); });
             contents.push({ role: 'user', parts: [{ text: userMessage }] });
             
-            // Call YOUR Cloudflare Worker (not Gemini directly)
             const response = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: contents,
                     generationConfig: { 
-                        temperature: 0.7, 
-                        topK: 64, 
+                        temperature: 0.8,
+                        topK: 40, 
                         topP: 0.95, 
-                        maxOutputTokens: 8192 
+                        maxOutputTokens: 500
                     }
                 })
             });

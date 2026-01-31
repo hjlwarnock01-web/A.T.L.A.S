@@ -2239,8 +2239,13 @@ Visual:
 
     </script>
     <script>
-        const GEMINI_API_KEY = 'AIzaSyBxDRYAHxTos16F9SnuRfN-5fgD6UbRjIo';
-        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        // ============================================
+        // PASTE YOUR CLOUDFLARE WORKER URL HERE:
+        // Example: https://atlas.YOUR-USERNAME.workers.dev
+        // ============================================
+        const WORKER_URL = 'https://atlas-proxy.hjlwarnock01.workers.dev';
+        // ============================================
+        
         const TRADING_SYSTEM = document.getElementById('tradingSystem').textContent.trim();
         let currentChatId = null;
         let conversations = JSON.parse(localStorage.getItem('atlas_conversations') || '{}');
@@ -2413,8 +2418,8 @@ ${TRADING_SYSTEM}`;
             recentMessages.forEach(msg => { contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts: [{ text: msg.content }] }); });
             contents.push({ role: 'user', parts: [{ text: userMessage }] });
             
-            const url = `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`;
-            const response = await fetch(url, {
+            // Call YOUR Cloudflare Worker (not Gemini directly)
+            const response = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -2427,10 +2432,11 @@ ${TRADING_SYSTEM}`;
                     }
                 })
             });
+            
             if (!response.ok) { 
                 const error = await response.json(); 
-                console.error('Full API Error:', error);
-                throw new Error(error.error?.message || 'API request failed'); 
+                console.error('Worker Error:', error);
+                throw new Error(error.error?.message || 'Request failed'); 
             }
             const data = await response.json();
             return data.candidates[0].content.parts[0].text;
@@ -2439,5 +2445,3 @@ ${TRADING_SYSTEM}`;
     </script>
 </body>
 </html>
-
-

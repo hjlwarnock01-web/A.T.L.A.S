@@ -33,14 +33,24 @@
         .message.user { background: #2d2438; color: #e5e5e5; border: 1px solid #3d3447; }
         .message.assistant { background: #212121; color: #e5e5e5; border: 1px solid #3a3a3a; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
         .message.system { background: #3d3020; color: #f5d896; border: 1px solid #4d4030; font-size: 14px; text-align: center; }
+        .message-image { max-width: 100%; border-radius: 6px; margin-top: 8px; border: 1px solid #3a3a3a; }
         .input-container { padding: 16px 24px 24px; background: #1a1a1a; border-top: 1px solid #3a3a3a; }
-        .input-wrapper { max-width: 48rem; margin: 0 auto; display: flex; gap: 8px; background: #2a2a2a; border: 1.5px solid #3a3a3a; border-radius: 12px; padding: 4px; transition: border-color 0.2s; }
+        .input-wrapper { max-width: 48rem; margin: 0 auto; display: flex; gap: 8px; background: #2a2a2a; border: 1.5px solid #3a3a3a; border-radius: 12px; padding: 4px; transition: border-color 0.2s; flex-direction: column; }
         .input-wrapper:focus-within { border-color: #ab7ff5; }
+        .input-row { display: flex; gap: 8px; align-items: flex-end; }
         #messageInput { flex: 1; padding: 12px; background: transparent; border: none; color: #e5e5e5; font-size: 15px; resize: none; font-family: inherit; min-height: 24px; max-height: 200px; outline: none; }
         #messageInput::placeholder { color: #6a6a6a; }
-        #sendBtn { padding: 10px 20px; background: #ab7ff5; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s; align-self: flex-end; }
+        .button-group { display: flex; gap: 8px; }
+        #imageBtn { padding: 10px; background: #3a3a3a; color: #e5e5e5; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
+        #imageBtn:hover { background: #4a4a4a; }
+        #sendBtn { padding: 10px 20px; background: #ab7ff5; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s; }
         #sendBtn:hover:not(:disabled) { background: #9568e3; }
         #sendBtn:disabled { background: #3a3a3a; cursor: not-allowed; color: #6a6a6a; }
+        #imageInput { display: none; }
+        .image-preview { padding: 8px; display: none; }
+        .image-preview img { max-width: 200px; border-radius: 6px; border: 1px solid #3a3a3a; }
+        .image-preview-container { position: relative; display: inline-block; }
+        .remove-image { position: absolute; top: 4px; right: 4px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px; line-height: 1; }
         .typing-indicator { max-width: 48rem; margin: 0 auto; width: 100%; padding: 16px 20px; background: #212121; border-radius: 8px; border: 1px solid #3a3a3a; display: flex; gap: 6px; align-items: center; }
         .typing-indicator span { width: 8px; height: 8px; background: #ab7ff5; border-radius: 50%; animation: typing 1.4s infinite; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
@@ -80,7 +90,7 @@
             <div class="empty-state" id="emptyState">
                 <div class="empty-state-logo">A</div>
                 <h2>Hey! I'm ATLAS</h2>
-                <p>Your intelligent trading system assistant.</p>
+                <p>Your intelligent trading system assistant. Upload chart screenshots for analysis!</p>
                 <div class="example-prompts">
                     <div class="example-prompt" onclick="sendExamplePrompt('Is this a valid 1H demand zone?')">
                         <h4>📊 Zone Validation</h4>
@@ -94,17 +104,29 @@
                         <h4>🎯 Stop Loss Guidance</h4>
                         <p>Calculate precise stop placement</p>
                     </div>
-                    <div class="example-prompt" onclick="sendExamplePrompt('What risk % should I use?')">
-                        <h4>💰 Risk Calculator</h4>
-                        <p>Determine exact risk percentage</p>
+                    <div class="example-prompt" onclick="document.getElementById('imageBtn').click()">
+                        <h4>📸 Analyze Chart</h4>
+                        <p>Upload a screenshot for analysis</p>
                     </div>
                 </div>
             </div>
         </div>
         <div class="input-container">
             <div class="input-wrapper">
-                <textarea id="messageInput" placeholder="Ask ATLAS about setups, zones, risk management..." rows="1"></textarea>
-                <button id="sendBtn" onclick="sendMessage()">Send</button>
+                <div class="image-preview" id="imagePreview">
+                    <div class="image-preview-container">
+                        <img id="previewImg" src="" alt="Preview">
+                        <button class="remove-image" onclick="removeImage()">×</button>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <textarea id="messageInput" placeholder="Ask ATLAS about setups, zones, risk management..." rows="1"></textarea>
+                    <div class="button-group">
+                        <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(event)">
+                        <button id="imageBtn" onclick="document.getElementById('imageInput').click()" title="Upload chart screenshot">📸</button>
+                        <button id="sendBtn" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2244,6 +2266,8 @@ Visual:
         let currentChatId = null;
         let conversations = JSON.parse(localStorage.getItem('atlas_conversations') || '{}');
         let isProcessing = false;
+        let selectedImage = null;
+        
         document.addEventListener('DOMContentLoaded', function() {
             const textarea = document.getElementById('messageInput');
             textarea.addEventListener('input', function() {
@@ -2264,6 +2288,26 @@ Visual:
                 loadChat(lastChat);
             }
         });
+        
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedImage = e.target.result;
+                document.getElementById('previewImg').src = selectedImage;
+                document.getElementById('imagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function removeImage() {
+            selectedImage = null;
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('imageInput').value = '';
+        }
+        
         function createNewChat() {
             const chatId = 'chat_' + Date.now();
             conversations[chatId] = { id: chatId, title: 'New Chat', messages: [], createdAt: Date.now(), updatedAt: Date.now() };
@@ -2282,7 +2326,7 @@ Visual:
                 if (emptyState) emptyState.style.display = 'flex';
             } else {
                 if (emptyState) emptyState.style.display = 'none';
-                chat.messages.forEach(msg => { appendMessage(msg.role, msg.content, false); });
+                chat.messages.forEach(msg => { appendMessage(msg.role, msg.content, false, msg.image); });
             }
             document.querySelectorAll('.conversation-item').forEach(item => { item.classList.toggle('active', item.dataset.chatId === chatId); });
             scrollToBottom();
@@ -2329,18 +2373,24 @@ Visual:
             saveConversations();
             loadConversations();
         }
-        function appendMessage(role, content, save = true) {
+        function appendMessage(role, content, save = true, image = null) {
             const emptyState = document.getElementById('emptyState');
             if (emptyState) emptyState.style.display = 'none';
             const messagesContainer = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
-            const formattedContent = formatMessage(content);
-            messageDiv.innerHTML = formattedContent;
+            
+            let html = '';
+            if (image) {
+                html += `<img src="${image}" class="message-image" alt="Chart">`;
+            }
+            html += formatMessage(content);
+            messageDiv.innerHTML = html;
+            
             messagesContainer.appendChild(messageDiv);
             scrollToBottom();
             if (save && currentChatId) {
-                conversations[currentChatId].messages.push({ role, content });
+                conversations[currentChatId].messages.push({ role, content, image });
                 conversations[currentChatId].updatedAt = Date.now();
                 if (conversations[currentChatId].messages.length === 1) { updateChatTitle(currentChatId, content); }
                 saveConversations();
@@ -2368,17 +2418,23 @@ Visual:
             if (isProcessing) return;
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
-            if (!message) return;
+            if (!message && !selectedImage) return;
+            
             input.value = '';
             input.style.height = 'auto';
             input.disabled = true;
             document.getElementById('sendBtn').disabled = true;
+            document.getElementById('imageBtn').disabled = true;
             isProcessing = true;
-            appendMessage('user', message);
+            
+            const currentImage = selectedImage;
+            appendMessage('user', message || '[Chart uploaded]', true, currentImage);
+            removeImage();
+            
             showTypingIndicator();
             document.getElementById('apiStatus').textContent = 'Thinking...';
             try {
-                const response = await callGemini(message);
+                const response = await callGemini(message || 'Analyze this chart', currentImage);
                 hideTypingIndicator();
                 appendMessage('assistant', response);
                 document.getElementById('apiStatus').textContent = 'Ready';
@@ -2388,14 +2444,16 @@ Visual:
                 appendMessage('system', 'Error: ' + error.message);
                 document.getElementById('apiStatus').textContent = 'Error';
                 document.getElementById('apiStatus').className = 'api-status error';
+                console.error('Full error:', error);
             } finally {
                 input.disabled = false;
                 document.getElementById('sendBtn').disabled = false;
+                document.getElementById('imageBtn').disabled = false;
                 isProcessing = false;
                 input.focus();
             }
         }
-        async function callGemini(userMessage) {
+        async function callGemini(userMessage, image = null) {
             const chat = conversations[currentChatId];
             const systemPrompt = `You are ATLAS - a knowledgeable trading assistant that helps traders make informed decisions.
 
@@ -2405,36 +2463,13 @@ YOUR APPROACH:
 3. Give COMPLETE answers when you have all the info you need
 4. Keep it CONCISE but THOROUGH - say what needs to be said, nothing more
 
-IMPORTANT RULES:
-- If the question is vague or missing details → Ask clarifying questions FIRST
-- If you have everything you need → Give a complete, helpful answer
-- Never dump documentation - explain concepts in your own words
-- Be conversational but professional
-
-EXAMPLE INTERACTIONS:
-
-User: "Is this a valid demand zone?"
-You: "I'd love to help you validate that zone! Can you tell me a few things:
-- What timeframe is the zone on?
-- Is price currently sitting in the zone or has it moved away?
-- Did it form after a clean downward move?"
-
-User: "I'm in a 1H demand zone, price just entered it after a strong drop, clean move down"
-You: "Great! That's a solid start. Now let's check the critical requirements:
-
-Is the zone fresh (hasn't been tested before)? If price has already reacted to this zone previously, it's considered stale and we skip it.
-
-What's the EMA alignment on the 1H? We need the 5 EMA above the 13 EMA for a valid demand zone setup.
-
-Once you confirm those, we can walk through the entry checklist!"
-
-User: "Should I enter this trade?"
-You: "Let me help you work through the entry checklist. First, tell me:
-- What type of zone is this (supply or demand)?
-- What timeframe?
-- Has price already reacted or is it just entering?"
-
-You have the complete trading system below. Reference it when needed, but explain concepts clearly rather than copying it word-for-word.
+WHEN ANALYZING CHARTS:
+- Identify visible zones (supply/demand)
+- Check market structure (HH/HL for uptrend, LH/LL for downtrend)
+- Note EMA positions if visible
+- Point out clean vs choppy moves
+- Identify if zones are fresh or tested
+- Give specific, actionable feedback
 
 Trading System:
 ${TRADING_SYSTEM}
@@ -2445,9 +2480,29 @@ Remember: You're a helpful expert having a conversation. Ask questions when uncl
                 { role: 'user', parts: [{ text: systemPrompt }] },
                 { role: 'model', parts: [{ text: 'Got it! I\'m here to help you make smart trading decisions. What\'s on your mind?' }] }
             ];
+            
+            // Add recent messages (text only - images too large for context)
             const recentMessages = chat.messages.slice(-10);
-            recentMessages.forEach(msg => { contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts: [{ text: msg.content }] }); });
-            contents.push({ role: 'user', parts: [{ text: userMessage }] });
+            recentMessages.forEach(msg => { 
+                const parts = [{ text: msg.content }];
+                contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts: parts }); 
+            });
+            
+            // Add current message with image if present
+            const currentParts = [];
+            if (image) {
+                // Convert base64 to proper format for Gemini
+                const base64Data = image.split(',')[1];
+                const mimeType = image.split(',')[0].split(':')[1].split(';')[0];
+                currentParts.push({
+                    inlineData: {
+                        mimeType: mimeType,
+                        data: base64Data
+                    }
+                });
+            }
+            currentParts.push({ text: userMessage });
+            contents.push({ role: 'user', parts: currentParts });
             
             const response = await fetch(WORKER_URL, {
                 method: 'POST',
@@ -2468,7 +2523,20 @@ Remember: You're a helpful expert having a conversation. Ask questions when uncl
                 console.error('Worker Error:', error);
                 throw new Error(error.error?.message || 'Request failed'); 
             }
+            
             const data = await response.json();
+            
+            // FIXED ERROR HANDLING
+            if (!data || !data.candidates || data.candidates.length === 0) {
+                console.error('Invalid API response:', data);
+                throw new Error('Invalid response from API - please try again');
+            }
+            
+            if (!data.candidates[0].content || !data.candidates[0].content.parts || data.candidates[0].content.parts.length === 0) {
+                console.error('Invalid response structure:', data);
+                throw new Error('Invalid response structure - please try again');
+            }
+            
             return data.candidates[0].content.parts[0].text;
         }
         function sendExamplePrompt(prompt) { document.getElementById('messageInput').value = prompt; sendMessage(); }

@@ -51,6 +51,7 @@
         .image-preview img { max-width: 200px; border-radius: 6px; border: 1px solid #3a3a3a; }
         .image-preview-container { position: relative; display: inline-block; }
         .remove-image { position: absolute; top: 4px; right: 4px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px; line-height: 1; }
+        .paste-hint { font-size: 11px; color: #6a6a6a; padding: 0 12px 8px; text-align: center; }
         .typing-indicator { max-width: 48rem; margin: 0 auto; width: 100%; padding: 16px 20px; background: #212121; border-radius: 8px; border: 1px solid #3a3a3a; display: flex; gap: 6px; align-items: center; }
         .typing-indicator span { width: 8px; height: 8px; background: #ab7ff5; border-radius: 50%; animation: typing 1.4s infinite; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
@@ -90,7 +91,7 @@
             <div class="empty-state" id="emptyState">
                 <div class="empty-state-logo">A</div>
                 <h2>Hey! I'm ATLAS</h2>
-                <p>Your intelligent trading system assistant. Upload chart screenshots for analysis!</p>
+                <p>Your intelligent trading system assistant. Paste chart screenshots directly (Ctrl+V)!</p>
                 <div class="example-prompts">
                     <div class="example-prompt" onclick="sendExamplePrompt('Is this a valid 1H demand zone?')">
                         <h4>📊 Zone Validation</h4>
@@ -106,7 +107,7 @@
                     </div>
                     <div class="example-prompt" onclick="document.getElementById('imageBtn').click()">
                         <h4>📸 Analyze Chart</h4>
-                        <p>Upload a screenshot for analysis</p>
+                        <p>Upload or paste a screenshot</p>
                     </div>
                 </div>
             </div>
@@ -120,7 +121,7 @@
                     </div>
                 </div>
                 <div class="input-row">
-                    <textarea id="messageInput" placeholder="Ask ATLAS about setups, zones, risk management..." rows="1"></textarea>
+                    <textarea id="messageInput" placeholder="Ask ATLAS... or paste chart (Ctrl+V)" rows="1"></textarea>
                     <div class="button-group">
                         <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(event)">
                         <button id="imageBtn" onclick="document.getElementById('imageInput').click()" title="Upload chart screenshot">📸</button>
@@ -2280,6 +2281,10 @@ Visual:
                     sendMessage();
                 }
             });
+            
+            // PASTE EVENT LISTENER
+            document.addEventListener('paste', handlePaste);
+            
             loadConversations();
             if (Object.keys(conversations).length === 0) {
                 createNewChat();
@@ -2288,6 +2293,26 @@ Visual:
                 loadChat(lastChat);
             }
         });
+        
+        // HANDLE PASTE (CTRL+V)
+        function handlePaste(event) {
+            const items = event.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    event.preventDefault();
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        selectedImage = e.target.result;
+                        document.getElementById('previewImg').src = selectedImage;
+                        document.getElementById('imagePreview').style.display = 'block';
+                        document.getElementById('messageInput').focus();
+                    };
+                    reader.readAsDataURL(blob);
+                    break;
+                }
+            }
+        }
         
         function handleImageSelect(event) {
             const file = event.target.files[0];
@@ -2481,17 +2506,14 @@ Remember: You're a helpful expert having a conversation. Ask questions when uncl
                 { role: 'model', parts: [{ text: 'Got it! I\'m here to help you make smart trading decisions. What\'s on your mind?' }] }
             ];
             
-            // Add recent messages (text only - images too large for context)
             const recentMessages = chat.messages.slice(-10);
             recentMessages.forEach(msg => { 
                 const parts = [{ text: msg.content }];
                 contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts: parts }); 
             });
             
-            // Add current message with image if present
             const currentParts = [];
             if (image) {
-                // Convert base64 to proper format for Gemini
                 const base64Data = image.split(',')[1];
                 const mimeType = image.split(',')[0].split(':')[1].split(';')[0];
                 currentParts.push({
@@ -2526,7 +2548,6 @@ Remember: You're a helpful expert having a conversation. Ask questions when uncl
             
             const data = await response.json();
             
-            // FIXED ERROR HANDLING
             if (!data || !data.candidates || data.candidates.length === 0) {
                 console.error('Invalid API response:', data);
                 throw new Error('Invalid response from API - please try again');

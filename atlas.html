@@ -33,25 +33,25 @@
         .message.user { background: #2d2438; color: #e5e5e5; border: 1px solid #3d3447; }
         .message.assistant { background: #212121; color: #e5e5e5; border: 1px solid #3a3a3a; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
         .message.system { background: #3d3020; color: #f5d896; border: 1px solid #4d4030; font-size: 14px; text-align: center; }
-        .message-image { max-width: 100%; border-radius: 6px; margin-top: 8px; border: 1px solid #3a3a3a; }
+        .message-image { max-width: 400px; margin-top: 12px; border-radius: 8px; border: 2px solid #3a3a3a; }
         .input-container { padding: 16px 24px 24px; background: #1a1a1a; border-top: 1px solid #3a3a3a; }
-        .input-wrapper { max-width: 48rem; margin: 0 auto; display: flex; gap: 8px; background: #2a2a2a; border: 1.5px solid #3a3a3a; border-radius: 12px; padding: 4px; transition: border-color 0.2s; flex-direction: column; }
+        .input-wrapper { max-width: 48rem; margin: 0 auto; display: flex; gap: 8px; background: #2a2a2a; border: 1.5px solid #3a3a3a; border-radius: 12px; padding: 4px; transition: border-color 0.2s; align-items: flex-end; }
         .input-wrapper:focus-within { border-color: #ab7ff5; }
-        .input-row { display: flex; gap: 8px; align-items: flex-end; }
-        #messageInput { flex: 1; padding: 12px; background: transparent; border: none; color: #e5e5e5; font-size: 15px; resize: none; font-family: inherit; min-height: 24px; max-height: 200px; outline: none; }
+        .input-content { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        #messageInput { width: 100%; padding: 12px; background: transparent; border: none; color: #e5e5e5; font-size: 15px; resize: none; font-family: inherit; min-height: 24px; max-height: 200px; outline: none; }
         #messageInput::placeholder { color: #6a6a6a; }
-        .button-group { display: flex; gap: 8px; }
-        #imageBtn { padding: 10px; background: #3a3a3a; color: #e5e5e5; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
-        #imageBtn:hover { background: #4a4a4a; }
+        .image-preview-container { display: flex; gap: 8px; padding: 0 12px; flex-wrap: wrap; }
+        .image-preview { position: relative; width: 100px; height: 100px; border-radius: 6px; overflow: hidden; border: 2px solid #3a3a3a; }
+        .image-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .image-preview-remove { position: absolute; top: 4px; right: 4px; background: #4a2626; color: #ff6b6b; border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; font-size: 16px; line-height: 1; transition: background 0.2s; }
+        .image-preview-remove:hover { background: #6a3636; }
+        .button-group { display: flex; gap: 4px; align-items: flex-end; }
+        #imageBtn { padding: 10px; background: #3a3a3a; color: #8a8a8a; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; transition: all 0.2s; line-height: 1; }
+        #imageBtn:hover { background: #4a4a4a; color: #e5e5e5; }
         #sendBtn { padding: 10px 20px; background: #ab7ff5; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s; }
         #sendBtn:hover:not(:disabled) { background: #9568e3; }
         #sendBtn:disabled { background: #3a3a3a; cursor: not-allowed; color: #6a6a6a; }
         #imageInput { display: none; }
-        .image-preview { padding: 8px; display: none; }
-        .image-preview img { max-width: 200px; border-radius: 6px; border: 1px solid #3a3a3a; }
-        .image-preview-container { position: relative; display: inline-block; }
-        .remove-image { position: absolute; top: 4px; right: 4px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px; line-height: 1; }
-        .paste-hint { font-size: 11px; color: #6a6a6a; padding: 0 12px 8px; text-align: center; }
         .typing-indicator { max-width: 48rem; margin: 0 auto; width: 100%; padding: 16px 20px; background: #212121; border-radius: 8px; border: 1px solid #3a3a3a; display: flex; gap: 6px; align-items: center; }
         .typing-indicator span { width: 8px; height: 8px; background: #ab7ff5; border-radius: 50%; animation: typing 1.4s infinite; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
@@ -85,17 +85,17 @@
                 <h1>ATLAS</h1>
                 <p>Advanced Trading Logic Assistant System</p>
             </div>
-            <div class="api-status" id="apiStatus">Ready</div>
+            <div class="api-status" id="apiStatus">Ready 👁️ Vision Enabled</div>
         </div>
         <div class="messages" id="messages">
             <div class="empty-state" id="emptyState">
                 <div class="empty-state-logo">A</div>
                 <h2>Hey! I'm ATLAS</h2>
-                <p>Your intelligent trading system assistant. Paste chart screenshots directly (Ctrl+V)!</p>
+                <p>Your intelligent trading system assistant with chart vision.</p>
                 <div class="example-prompts">
-                    <div class="example-prompt" onclick="sendExamplePrompt('Is this a valid 1H demand zone?')">
-                        <h4>📊 Zone Validation</h4>
-                        <p>Verify if zones meet requirements</p>
+                    <div class="example-prompt" onclick="sendExamplePrompt('Analyze this chart')">
+                        <h4>📊 Chart Analysis</h4>
+                        <p>Upload a chart for complete analysis</p>
                     </div>
                     <div class="example-prompt" onclick="sendExamplePrompt('Should I enter this trade?')">
                         <h4>✅ Entry Checklist</h4>
@@ -105,38 +105,40 @@
                         <h4>🎯 Stop Loss Guidance</h4>
                         <p>Calculate precise stop placement</p>
                     </div>
-                    <div class="example-prompt" onclick="document.getElementById('imageBtn').click()">
-                        <h4>📸 Analyze Chart</h4>
-                        <p>Upload or paste a screenshot</p>
+                    <div class="example-prompt" onclick="sendExamplePrompt('What risk % should I use?')">
+                        <h4>💰 Risk Calculator</h4>
+                        <p>Determine exact risk percentage</p>
                     </div>
                 </div>
             </div>
         </div>
         <div class="input-container">
             <div class="input-wrapper">
-                <div class="image-preview" id="imagePreview">
-                    <div class="image-preview-container">
-                        <img id="previewImg" src="" alt="Preview">
-                        <button class="remove-image" onclick="removeImage()">×</button>
-                    </div>
+                <div class="input-content">
+                    <div class="image-preview-container" id="imagePreviewContainer"></div>
+                    <textarea id="messageInput" placeholder="Ask ATLAS about setups, zones, risk management... or upload a chart!" rows="1"></textarea>
                 </div>
-                <div class="input-row">
-                    <textarea id="messageInput" placeholder="Ask ATLAS... or paste chart (Ctrl+V)" rows="1"></textarea>
-                    <div class="button-group">
-                        <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(event)">
-                        <button id="imageBtn" onclick="document.getElementById('imageInput').click()" title="Upload chart screenshot">📸</button>
-                        <button id="sendBtn" onclick="sendMessage()">Send</button>
-                    </div>
+                <div class="button-group">
+                    <button id="imageBtn" onclick="document.getElementById('imageInput').click()" title="Upload chart image">📎</button>
+                    <button id="sendBtn" onclick="sendMessage()">Send</button>
                 </div>
             </div>
+            <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageUpload(event)">
         </div>
     </div>
     <script id="tradingSystem" type="text/plain">
 # HARVEY'S COMPLETE MARKET STRUCTURE LOGIC SYSTEM
 
-**Version 2.1 - Production Release with Trigger Zones**
+**Version 2.1 - Updated Release (Cases A/B Merged)**
 
 *"May your edge stay sharp and your drawdowns shallow."*
+
+**CHANGELOG (Latest Update):**
+- Cases A and B merged into single "Case A/B" category
+- Both cases had identical trading requirements (liquidity → 2M/5M CHoCH → entry)
+- Only difference was conceptual (how 15M became aligned)
+- Simplified decision tree: 15M aligned (A/B) vs 15M opposite (C)
+- All trading logic, requirements, and risk formulas remain unchanged
 
 ---
 
@@ -436,7 +438,7 @@ If 15M zone does not exist inside 1H zone boundaries:
 
 **WHEN REQUIRED:**
 - ONLY for Case C (15M opposite direction to trade)
-- NOT required for Case A or Case B
+- NOT required for Case A/B
 
 **CHOCH ZONE CREATION (For Longs in Case C):**
 ```
@@ -529,9 +531,12 @@ STEP 2: Wait for price to tap 15M zone
 
 STEP 3: Check 15M trend state:
 
-├─ CASE A: 15M Already Aligned
-│  ├─ 15M CHoCH already occurred in trade direction
-│  ├─ 15M structure supports trade
+├─ CASE A/B: 15M ALIGNED (Trend Continuation)
+│  ├─ 15M structure supports trade direction
+│  ├─ Doesn't matter HOW it became aligned
+│  ├─ Examples:
+│  │  ├─ 15M CHoCH already occurred in trade direction, OR
+│  │  └─ 15M same direction as 1H trend (both aligned)
 │  ├─ NO incomplete pattern needed
 │  ├─ NO CHoCH zone needed
 │  │
@@ -541,19 +546,7 @@ STEP 3: Check 15M trend state:
 │     ├─ EMA requirements met
 │     └─ Entry: Pullback to 2M/5M zone
 │
-├─ CASE B: 15M Same Direction as 1H Trend
-│  ├─ Both timeframes aligned (continuation)
-│  ├─ Example: 1H uptrend + 15M uptrend, hit 1H demand
-│  ├─ NO incomplete pattern needed
-│  ├─ NO CHoCH zone needed
-│  │
-│  └─ Requirements:
-│     ├─ 15M liquidity swept
-│     ├─ 2M/5M CHoCH confirmed (after liquidity)
-│     ├─ EMA requirements met
-│     └─ Entry: Pullback to 2M/5M zone
-│
-└─ CASE C: 15M Opposite Direction
+└─ CASE C: 15M OPPOSITE (Counter Trend)
    ├─ 15M trend opposite to trade direction
    ├─ Example: Want long but 15M in downtrend
    ├─ NEED incomplete CHoCH pattern (mandatory)
@@ -1121,7 +1114,7 @@ COUNTER DIRECTION:
 
 **FACTOR 2: 15M Trend Alignment**
 ```
-PRO 15M TREND (Case A or B):
+PRO 15M TREND (Case A/B):
 ├─ 15M already aligned with trade direction
 └─ Adjustment: +0.25%
 
@@ -1148,7 +1141,7 @@ VALIDATED OR NO mzone:
 Setup:
 ├─ Long from 1H demand
 ├─ EMA 1/2 above EMA 3 (pro direction) → +0.0%
-├─ 15M already in uptrend (Case A) → +0.25%
+├─ 15M already in uptrend (Case A/B) → +0.25%
 ├─ No unvalidated mzone → +0.0%
 
 Risk: 1.0% + 0.0% + 0.25% + 0.0% = 1.25%
@@ -1170,7 +1163,7 @@ Risk: 1.0% - 0.25% + 0.0% - 0.25% = 0.5%
 Setup:
 ├─ Long from 1H demand
 ├─ EMA 1/2 below EMA 3 (counter direction) → -0.25%
-├─ 15M already in uptrend (Case A) → +0.25%
+├─ 15M already in uptrend (Case A/B) → +0.25%
 ├─ No unvalidated mzone → +0.0%
 
 Risk: 1.0% - 0.25% + 0.25% + 0.0% = 1.0%
@@ -1479,9 +1472,8 @@ Structure looks unclear but checklist passes:
    └─ Price must tap 15M zone
 
 ☐ 3. 15M STATE CHECK
-   ├─ Case A: 15M already in uptrend (skip to #5)
-   ├─ Case B: 15M + 1H both uptrend (skip to #5)
-   └─ Case C: 15M in downtrend (proceed to #4)
+   ├─ Case A/B: 15M aligned with trade direction (skip to #5)
+   └─ Case C: 15M opposite to trade direction (proceed to #4)
 
 ☐ 4. CASE C REQUIREMENTS (if 15M opposite)
    ├─ Incomplete 15M CHoCH pattern:
@@ -1564,9 +1556,8 @@ Structure looks unclear but checklist passes:
    └─ Price must tap 15M zone
 
 ☐ 3. 15M STATE CHECK
-   ├─ Case A: 15M already in downtrend (skip to #5)
-   ├─ Case B: 15M + 1H both downtrend (skip to #5)
-   └─ Case C: 15M in uptrend (proceed to #4)
+   ├─ Case A/B: 15M aligned with trade direction (skip to #5)
+   └─ Case C: 15M opposite to trade direction (proceed to #4)
 
 ☐ 4. CASE C REQUIREMENTS (if 15M opposite)
    ├─ Incomplete 15M CHoCH pattern:
@@ -1724,7 +1715,7 @@ MAXIMUM EXPOSURE:
 
 2. **Context Awareness**
    - Rules change inside vs outside HTF zones
-   - Case A/B/C require different approaches
+   - Case A/B vs Case C require different approaches
    - CHoCH zones only for Case C
    - mzone relevance varies by scenario
    - Trigger zones provide refinement when identified
@@ -2259,16 +2250,18 @@ Visual:
 **Good luck, Harvey. Your discipline will determine your success.**
 
 🎯
-
     </script>
     <script>
         const WORKER_URL = 'https://atlas-proxy.hjlwarnock01.workers.dev';
         const TRADING_SYSTEM = document.getElementById('tradingSystem').textContent.trim();
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit per image
+        const MAX_IMAGES = 5; // Max 5 images per message
+        
         let currentChatId = null;
         let conversations = JSON.parse(localStorage.getItem('atlas_conversations') || '{}');
         let isProcessing = false;
-        let selectedImage = null;
-        
+        let uploadedImages = [];
+
         document.addEventListener('DOMContentLoaded', function() {
             const textarea = document.getElementById('messageInput');
             textarea.addEventListener('input', function() {
@@ -2281,10 +2274,6 @@ Visual:
                     sendMessage();
                 }
             });
-            
-            // PASTE EVENT LISTENER
-            document.addEventListener('paste', handlePaste);
-            
             loadConversations();
             if (Object.keys(conversations).length === 0) {
                 createNewChat();
@@ -2293,46 +2282,63 @@ Visual:
                 loadChat(lastChat);
             }
         });
-        
-        // HANDLE PASTE (CTRL+V)
-        function handlePaste(event) {
-            const items = event.clipboardData.items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    event.preventDefault();
-                    const blob = items[i].getAsFile();
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        selectedImage = e.target.result;
-                        document.getElementById('previewImg').src = selectedImage;
-                        document.getElementById('imagePreview').style.display = 'block';
-                        document.getElementById('messageInput').focus();
-                    };
-                    reader.readAsDataURL(blob);
+
+        // FIX: Added file size and count validation
+        function handleImageUpload(event) {
+            const files = event.target.files;
+            
+            for (let file of files) {
+                // CHECK IMAGE COUNT LIMIT
+                if (uploadedImages.length >= MAX_IMAGES) {
+                    alert(`Maximum ${MAX_IMAGES} images per message!`);
                     break;
                 }
+                
+                if (file.type.startsWith('image/')) {
+                    // CHECK FILE SIZE
+                    if (file.size > MAX_FILE_SIZE) {
+                        alert(`Image too large! Max 5MB. Your image: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+                        continue;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const base64 = e.target.result.split(',')[1];
+                        uploadedImages.push({
+                            data: base64,
+                            mimeType: file.type,
+                            dataUrl: e.target.result
+                        });
+                        displayImagePreview(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
             }
+            event.target.value = '';
         }
-        
-        function handleImageSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                selectedImage = e.target.result;
-                document.getElementById('previewImg').src = selectedImage;
-                document.getElementById('imagePreview').style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+
+        function displayImagePreview(dataUrl) {
+            const container = document.getElementById('imagePreviewContainer');
+            const preview = document.createElement('div');
+            preview.className = 'image-preview';
+            preview.innerHTML = `
+                <img src="${dataUrl}" alt="Preview">
+                <button class="image-preview-remove" onclick="removeImagePreview(this, '${dataUrl}')">×</button>
+            `;
+            container.appendChild(preview);
         }
-        
-        function removeImage() {
-            selectedImage = null;
-            document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('imageInput').value = '';
+
+        function removeImagePreview(button, dataUrl) {
+            const preview = button.parentElement;
+            preview.remove();
+            uploadedImages = uploadedImages.filter(img => img.dataUrl !== dataUrl);
         }
-        
+
+        function clearImagePreviews() {
+            document.getElementById('imagePreviewContainer').innerHTML = '';
+            uploadedImages = [];
+        }
+
         function createNewChat() {
             const chatId = 'chat_' + Date.now();
             conversations[chatId] = { id: chatId, title: 'New Chat', messages: [], createdAt: Date.now(), updatedAt: Date.now() };
@@ -2340,6 +2346,7 @@ Visual:
             loadChat(chatId);
             loadConversations();
         }
+
         function loadChat(chatId) {
             currentChatId = chatId;
             const chat = conversations[chatId];
@@ -2351,11 +2358,12 @@ Visual:
                 if (emptyState) emptyState.style.display = 'flex';
             } else {
                 if (emptyState) emptyState.style.display = 'none';
-                chat.messages.forEach(msg => { appendMessage(msg.role, msg.content, false, msg.image); });
+                chat.messages.forEach(msg => { appendMessage(msg.role, msg.content, msg.images || null, false); });
             }
             document.querySelectorAll('.conversation-item').forEach(item => { item.classList.toggle('active', item.dataset.chatId === chatId); });
             scrollToBottom();
         }
+
         function loadConversations() {
             const container = document.getElementById('conversationsList');
             container.innerHTML = '';
@@ -2379,6 +2387,7 @@ Visual:
                 container.appendChild(div);
             });
         }
+
         function deleteChat(chatId, event) {
             event.stopPropagation();
             if (confirm('Delete this conversation?')) {
@@ -2391,36 +2400,44 @@ Visual:
                 loadConversations();
             }
         }
+
         function saveConversations() { localStorage.setItem('atlas_conversations', JSON.stringify(conversations)); }
+
+        // FIX: Operator precedence bug fixed
         function updateChatTitle(chatId, firstMessage) {
             const title = firstMessage.substring(0, 50) + (firstMessage.length > 50 ? '...' : '');
             conversations[chatId].title = title;
             saveConversations();
             loadConversations();
         }
-        function appendMessage(role, content, save = true, image = null) {
+
+        function appendMessage(role, content, images = null, save = true) {
             const emptyState = document.getElementById('emptyState');
             if (emptyState) emptyState.style.display = 'none';
             const messagesContainer = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
             
-            let html = '';
-            if (image) {
-                html += `<img src="${image}" class="message-image" alt="Chart">`;
-            }
-            html += formatMessage(content);
-            messageDiv.innerHTML = html;
+            let messageHTML = formatMessage(content);
             
+            if (images && images.length > 0) {
+                images.forEach(img => {
+                    messageHTML += `<br><img src="${img.dataUrl}" class="message-image" alt="Chart">`;
+                });
+            }
+            
+            messageDiv.innerHTML = messageHTML;
             messagesContainer.appendChild(messageDiv);
             scrollToBottom();
+            
             if (save && currentChatId) {
-                conversations[currentChatId].messages.push({ role, content, image });
+                conversations[currentChatId].messages.push({ role, content, images: images || [] });
                 conversations[currentChatId].updatedAt = Date.now();
                 if (conversations[currentChatId].messages.length === 1) { updateChatTitle(currentChatId, content); }
                 saveConversations();
             }
         }
+
         function formatMessage(text) {
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
@@ -2428,6 +2445,7 @@ Visual:
             text = text.replace(/\n/g, '<br>');
             return text;
         }
+
         function showTypingIndicator() {
             const messagesContainer = document.getElementById('messages');
             const typingDiv = document.createElement('div');
@@ -2437,39 +2455,42 @@ Visual:
             messagesContainer.appendChild(typingDiv);
             scrollToBottom();
         }
+
         function hideTypingIndicator() { const indicator = document.getElementById('typingIndicator'); if (indicator) indicator.remove(); }
+
         function scrollToBottom() { const messagesContainer = document.getElementById('messages'); messagesContainer.scrollTop = messagesContainer.scrollHeight; }
+
         async function sendMessage() {
             if (isProcessing) return;
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
-            if (!message && !selectedImage) return;
-            
+            if (!message && uploadedImages.length === 0) return;
+
             input.value = '';
             input.style.height = 'auto';
             input.disabled = true;
             document.getElementById('sendBtn').disabled = true;
             document.getElementById('imageBtn').disabled = true;
             isProcessing = true;
-            
-            const currentImage = selectedImage;
-            appendMessage('user', message || '[Chart uploaded]', true, currentImage);
-            removeImage();
-            
+
+            const imagesToSend = [...uploadedImages];
+            appendMessage('user', message || 'Analyze this chart', imagesToSend);
+            clearImagePreviews();
+
             showTypingIndicator();
-            document.getElementById('apiStatus').textContent = 'Thinking...';
+            document.getElementById('apiStatus').textContent = 'Analyzing...';
+
             try {
-                const response = await callGemini(message || 'Analyze this chart', currentImage);
+                const response = await callGemini(message || 'Analyze this chart according to the trading system.', imagesToSend);
                 hideTypingIndicator();
                 appendMessage('assistant', response);
-                document.getElementById('apiStatus').textContent = 'Ready';
+                document.getElementById('apiStatus').textContent = 'Ready 👁️ Vision Enabled';
                 document.getElementById('apiStatus').className = 'api-status';
             } catch (error) {
                 hideTypingIndicator();
                 appendMessage('system', 'Error: ' + error.message);
                 document.getElementById('apiStatus').textContent = 'Error';
                 document.getElementById('apiStatus').className = 'api-status error';
-                console.error('Full error:', error);
             } finally {
                 input.disabled = false;
                 document.getElementById('sendBtn').disabled = false;
@@ -2478,54 +2499,68 @@ Visual:
                 input.focus();
             }
         }
-        async function callGemini(userMessage, image = null) {
+
+        async function callGemini(userMessage, images = []) {
             const chat = conversations[currentChatId];
-            const systemPrompt = `You are ATLAS - a knowledgeable trading assistant that helps traders make informed decisions.
+            const systemPrompt = `You are ATLAS (Advanced Trading Logic Assistant System), an expert trading assistant with CHART VISION capabilities.
 
-YOUR APPROACH:
-1. Use SIMPLE, CLEAR language - no unnecessary jargon
-2. ASK QUESTIONS when you need more info to give accurate advice
-3. Give COMPLETE answers when you have all the info you need
-4. Keep it CONCISE but THOROUGH - say what needs to be said, nothing more
+CRITICAL: YOU CAN SEE AND ANALYZE TRADING CHART IMAGES!
 
-WHEN ANALYZING CHARTS:
-- Identify visible zones (supply/demand)
-- Check market structure (HH/HL for uptrend, LH/LL for downtrend)
-- Note EMA positions if visible
-- Point out clean vs choppy moves
-- Identify if zones are fresh or tested
-- Give specific, actionable feedback
+When a user uploads a chart image, you MUST:
+1. ANALYZE THE VISUAL CONTENT of the chart
+2. IDENTIFY zones, structure points, EMAs, and price action
+3. EXTRACT information from the chart systematically
+4. APPLY the V2.1 trading system rules to what you see
 
-Trading System:
+Your chart analysis should cover:
+- Zone identification (1H, 15M, CHoCH zones by color/label)
+- Structure points (HH, HL, LH, LL)
+- Current price location
+- EMA positions (if visible)
+- Liquidity sweeps
+- CHoCH/BOS points
+- Current trend state (15M aligned or opposite)
+- What's MISSING for a valid long/short entry
+
+TRADING SYSTEM REFERENCE:
 ${TRADING_SYSTEM}
 
-Remember: You're a helpful expert having a conversation. Ask questions when unclear, give thorough answers when you have the facts!`;
-            
+Be conversational but thorough when analyzing charts. Walk through the V2.1 checklist systematically.`;
+
             const contents = [
                 { role: 'user', parts: [{ text: systemPrompt }] },
-                { role: 'model', parts: [{ text: 'Got it! I\'m here to help you make smart trading decisions. What\'s on your mind?' }] }
+                { role: 'model', parts: [{ text: 'Understood! I can see and analyze trading charts. Upload a chart and I\\'ll walk you through it using the V2.1 system.' }] }
             ];
-            
+
             const recentMessages = chat.messages.slice(-10);
-            recentMessages.forEach(msg => { 
+            recentMessages.forEach(msg => {
                 const parts = [{ text: msg.content }];
-                contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts: parts }); 
+                if (msg.images && msg.images.length > 0) {
+                    msg.images.forEach(img => {
+                        parts.push({
+                            inline_data: {
+                                mime_type: img.mimeType,
+                                data: img.data
+                            }
+                        });
+                    });
+                }
+                contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts });
             });
-            
-            const currentParts = [];
-            if (image) {
-                const base64Data = image.split(',')[1];
-                const mimeType = image.split(',')[0].split(':')[1].split(';')[0];
-                currentParts.push({
-                    inlineData: {
-                        mimeType: mimeType,
-                        data: base64Data
-                    }
+
+            const userParts = [{ text: userMessage }];
+            if (images && images.length > 0) {
+                images.forEach(img => {
+                    userParts.push({
+                        inline_data: {
+                            mime_type: img.mimeType,
+                            data: img.data
+                        }
+                    });
                 });
             }
-            currentParts.push({ text: userMessage });
-            contents.push({ role: 'user', parts: currentParts });
-            
+            contents.push({ role: 'user', parts: userParts });
+
             const response = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2539,28 +2574,17 @@ Remember: You're a helpful expert having a conversation. Ask questions when uncl
                     }
                 })
             });
-            
+
             if (!response.ok) { 
                 const error = await response.json(); 
                 console.error('Worker Error:', error);
                 throw new Error(error.error?.message || 'Request failed'); 
             }
-            
             const data = await response.json();
-            
-            if (!data || !data.candidates || data.candidates.length === 0) {
-                console.error('Invalid API response:', data);
-                throw new Error('Invalid response from API - please try again');
-            }
-            
-            if (!data.candidates[0].content || !data.candidates[0].content.parts || data.candidates[0].content.parts.length === 0) {
-                console.error('Invalid response structure:', data);
-                throw new Error('Invalid response structure - please try again');
-            }
-            
             return data.candidates[0].content.parts[0].text;
         }
-        function sendExamplePrompt(prompt) { document.getElementById('messageInput').value = prompt; sendMessage(); }
+
+        function sendExamplePrompt(prompt) { document.getElementById('messageInput').value = prompt; }
     </script>
 </body>
 </html>

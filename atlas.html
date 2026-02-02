@@ -116,7 +116,7 @@
             <div class="input-wrapper">
                 <div class="input-content">
                     <div class="image-preview-container" id="imagePreviewContainer"></div>
-                    <textarea id="messageInput" placeholder="Ask ATLAS about setups, zones, risk management... or upload a chart!" rows="1"></textarea>
+                    <textarea id="messageInput" placeholder="Ask ATLAS or paste chart (Ctrl+V)..." rows="1"></textarea>
                 </div>
                 <div class="button-group">
                     <button id="imageBtn" onclick="document.getElementById('imageInput').click()" title="Upload chart image">📎</button>
@@ -2254,8 +2254,8 @@ Visual:
     <script>
         const WORKER_URL = 'https://atlas-proxy.hjlwarnock01.workers.dev';
         const TRADING_SYSTEM = document.getElementById('tradingSystem').textContent.trim();
-        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit per image
-        const MAX_IMAGES = 5; // Max 5 images per message
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        const MAX_IMAGES = 5;
         
         let currentChatId = null;
         let conversations = JSON.parse(localStorage.getItem('atlas_conversations') || '{}');
@@ -2274,6 +2274,11 @@ Visual:
                     sendMessage();
                 }
             });
+            
+            // PASTE EVENT LISTENERS
+            textarea.addEventListener('paste', handlePaste);
+            document.addEventListener('paste', handlePaste);
+            
             loadConversations();
             if (Object.keys(conversations).length === 0) {
                 createNewChat();
@@ -2283,21 +2288,52 @@ Visual:
             }
         });
 
-        // FIX: Added file size and count validation
+        function handlePaste(event) {
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    event.preventDefault();
+                    
+                    if (uploadedImages.length >= MAX_IMAGES) {
+                        alert('Maximum ' + MAX_IMAGES + ' images per message!');
+                        return;
+                    }
+                    
+                    const blob = items[i].getAsFile();
+                    
+                    if (blob.size > MAX_FILE_SIZE) {
+                        alert('Image too large! Max 5MB. Your image: ' + (blob.size / 1024 / 1024).toFixed(1) + 'MB');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const base64 = e.target.result.split(',')[1];
+                        uploadedImages.push({
+                            data: base64,
+                            mimeType: blob.type,
+                            dataUrl: e.target.result
+                        });
+                        displayImagePreview(e.target.result);
+                    };
+                    reader.readAsDataURL(blob);
+                }
+            }
+        }
+
         function handleImageUpload(event) {
             const files = event.target.files;
             
-            for (let file of files) {
-                // CHECK IMAGE COUNT LIMIT
+            for (let i = 0; i < files.length; i++) {
                 if (uploadedImages.length >= MAX_IMAGES) {
-                    alert(`Maximum ${MAX_IMAGES} images per message!`);
+                    alert('Maximum ' + MAX_IMAGES + ' images per message!');
                     break;
                 }
                 
-                if (file.type.startsWith('image/')) {
-                    // CHECK FILE SIZE
-                    if (file.size > MAX_FILE_SIZE) {
-                        alert(`Image too large! Max 5MB. Your image: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+                if (files[i].type.startsWith('image/')) {
+                    if (files[i].size > MAX_FILE_SIZE) {
+                        alert('Image too large! Max 5MB. Your image: ' + (files[i].size / 1024 / 1024).toFixed(1) + 'MB');
                         continue;
                     }
                     
@@ -2306,12 +2342,12 @@ Visual:
                         const base64 = e.target.result.split(',')[1];
                         uploadedImages.push({
                             data: base64,
-                            mimeType: file.type,
+                            mimeType: files[i].type,
                             dataUrl: e.target.result
                         });
                         displayImagePreview(e.target.result);
                     };
-                    reader.readAsDataURL(file);
+                    reader.readAsDataURL(files[i]);
                 }
             }
             event.target.value = '';
@@ -2321,17 +2357,13 @@ Visual:
             const container = document.getElementById('imagePreviewContainer');
             const preview = document.createElement('div');
             preview.className = 'image-preview';
-            preview.innerHTML = `
-                <img src="${dataUrl}" alt="Preview">
-                <button class="image-preview-remove" onclick="removeImagePreview(this, '${dataUrl}')">×</button>
-            `;
+            preview.innerHTML = '<img src="' + dataUrl + '" alt="Preview"><button class="image-preview-remove" onclick="removeImagePreview(this, \'' + dataUrl + '\')">×</button>';
             container.appendChild(preview);
         }
 
         function removeImagePreview(button, dataUrl) {
-            const preview = button.parentElement;
-            preview.remove();
-            uploadedImages = uploadedImages.filter(img => img.dataUrl !== dataUrl);
+            button.parentElement.remove();
+            uploadedImages = uploadedImages.filter(function(img) { return img.dataUrl !== dataUrl; });
         }
 
         function clearImagePreviews() {
@@ -2353,22 +2385,32 @@ Visual:
             const messagesContainer = document.getElementById('messages');
             const emptyState = document.getElementById('emptyState');
             const messages = messagesContainer.querySelectorAll('.message, .typing-indicator');
-            messages.forEach(msg => msg.remove());
+            for (let i = 0; i < messages.length; i++) { messages[i].remove(); }
             if (chat.messages.length === 0) {
                 if (emptyState) emptyState.style.display = 'flex';
             } else {
                 if (emptyState) emptyState.style.display = 'none';
-                chat.messages.forEach(msg => { appendMessage(msg.role, msg.content, msg.images || null, false); });
+                for (let i = 0; i < chat.messages.length; i++) { 
+                    appendMessage(chat.messages[i].role, chat.messages[i].content, chat.messages[i].images || null, false); 
+                }
             }
-            document.querySelectorAll('.conversation-item').forEach(item => { item.classList.toggle('active', item.dataset.chatId === chatId); });
+            const items = document.querySelectorAll('.conversation-item');
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].dataset.chatId === chatId) {
+                    items[i].classList.add('active');
+                } else {
+                    items[i].classList.remove('active');
+                }
+            }
             scrollToBottom();
         }
 
         function loadConversations() {
             const container = document.getElementById('conversationsList');
             container.innerHTML = '';
-            const sortedChats = Object.values(conversations).sort((a, b) => b.updatedAt - a.updatedAt);
-            sortedChats.forEach(chat => {
+            const sortedChats = Object.values(conversations).sort(function(a, b) { return b.updatedAt - a.updatedAt; });
+            for (let i = 0; i < sortedChats.length; i++) {
+                const chat = sortedChats[i];
                 const div = document.createElement('div');
                 div.className = 'conversation-item' + (chat.id === currentChatId ? ' active' : '');
                 div.dataset.chatId = chat.id;
@@ -2382,10 +2424,10 @@ Visual:
                 if (isToday) { timeText = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } 
                 else if (isYesterday) { timeText = 'Yesterday'; } 
                 else { timeText = date.toLocaleDateString([], { month: 'short', day: 'numeric' }); }
-                div.innerHTML = `<div class="conversation-content"><h3>${chat.title}</h3><p>${timeText}</p></div><button class="delete-btn" onclick="deleteChat('${chat.id}', event)" title="Delete">×</button>`;
-                div.onclick = (e) => { if (!e.target.classList.contains('delete-btn')) { loadChat(chat.id); } };
+                div.innerHTML = '<div class="conversation-content"><h3>' + chat.title + '</h3><p>' + timeText + '</p></div><button class="delete-btn" onclick="deleteChat(\'' + chat.id + '\', event)" title="Delete">×</button>';
+                div.onclick = function(e) { if (!e.target.classList.contains('delete-btn')) { loadChat(chat.id); } };
                 container.appendChild(div);
-            });
+            }
         }
 
         function deleteChat(chatId, event) {
@@ -2403,7 +2445,6 @@ Visual:
 
         function saveConversations() { localStorage.setItem('atlas_conversations', JSON.stringify(conversations)); }
 
-        // FIX: Operator precedence bug fixed
         function updateChatTitle(chatId, firstMessage) {
             const title = firstMessage.substring(0, 50) + (firstMessage.length > 50 ? '...' : '');
             conversations[chatId].title = title;
@@ -2411,19 +2452,20 @@ Visual:
             loadConversations();
         }
 
-        function appendMessage(role, content, images = null, save = true) {
+        function appendMessage(role, content, images, save) {
+            if (save === undefined) save = true;
             const emptyState = document.getElementById('emptyState');
             if (emptyState) emptyState.style.display = 'none';
             const messagesContainer = document.getElementById('messages');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
+            messageDiv.className = 'message ' + role;
             
             let messageHTML = formatMessage(content);
             
             if (images && images.length > 0) {
-                images.forEach(img => {
-                    messageHTML += `<br><img src="${img.dataUrl}" class="message-image" alt="Chart">`;
-                });
+                for (let i = 0; i < images.length; i++) {
+                    messageHTML += '<br><img src="' + images[i].dataUrl + '" class="message-image" alt="Chart">';
+                }
             }
             
             messageDiv.innerHTML = messageHTML;
@@ -2431,7 +2473,7 @@ Visual:
             scrollToBottom();
             
             if (save && currentChatId) {
-                conversations[currentChatId].messages.push({ role, content, images: images || [] });
+                conversations[currentChatId].messages.push({ role: role, content: content, images: images || [] });
                 conversations[currentChatId].updatedAt = Date.now();
                 if (conversations[currentChatId].messages.length === 1) { updateChatTitle(currentChatId, content); }
                 saveConversations();
@@ -2456,9 +2498,15 @@ Visual:
             scrollToBottom();
         }
 
-        function hideTypingIndicator() { const indicator = document.getElementById('typingIndicator'); if (indicator) indicator.remove(); }
+        function hideTypingIndicator() { 
+            const indicator = document.getElementById('typingIndicator'); 
+            if (indicator) indicator.remove(); 
+        }
 
-        function scrollToBottom() { const messagesContainer = document.getElementById('messages'); messagesContainer.scrollTop = messagesContainer.scrollHeight; }
+        function scrollToBottom() { 
+            const messagesContainer = document.getElementById('messages'); 
+            messagesContainer.scrollTop = messagesContainer.scrollHeight; 
+        }
 
         async function sendMessage() {
             if (isProcessing) return;
@@ -2473,7 +2521,7 @@ Visual:
             document.getElementById('imageBtn').disabled = true;
             isProcessing = true;
 
-            const imagesToSend = [...uploadedImages];
+            const imagesToSend = uploadedImages.slice();
             appendMessage('user', message || 'Analyze this chart', imagesToSend);
             clearImagePreviews();
 
@@ -2500,64 +2548,42 @@ Visual:
             }
         }
 
-        async function callGemini(userMessage, images = []) {
+        async function callGemini(userMessage, images) {
             const chat = conversations[currentChatId];
-            const systemPrompt = `You are ATLAS (Advanced Trading Logic Assistant System), an expert trading assistant with CHART VISION capabilities.
-
-CRITICAL: YOU CAN SEE AND ANALYZE TRADING CHART IMAGES!
-
-When a user uploads a chart image, you MUST:
-1. ANALYZE THE VISUAL CONTENT of the chart
-2. IDENTIFY zones, structure points, EMAs, and price action
-3. EXTRACT information from the chart systematically
-4. APPLY the V2.1 trading system rules to what you see
-
-Your chart analysis should cover:
-- Zone identification (1H, 15M, CHoCH zones by color/label)
-- Structure points (HH, HL, LH, LL)
-- Current price location
-- EMA positions (if visible)
-- Liquidity sweeps
-- CHoCH/BOS points
-- Current trend state (15M aligned or opposite)
-- What's MISSING for a valid long/short entry
-
-TRADING SYSTEM REFERENCE:
-${TRADING_SYSTEM}
-
-Be conversational but thorough when analyzing charts. Walk through the V2.1 checklist systematically.`;
+            const systemPrompt = 'You are ATLAS (Advanced Trading Logic Assistant System), an expert trading assistant with CHART VISION capabilities.\n\nCRITICAL: YOU CAN SEE AND ANALYZE TRADING CHART IMAGES!\n\nWhen a user uploads a chart image, you MUST:\n1. ANALYZE THE VISUAL CONTENT of the chart\n2. IDENTIFY zones, structure points, EMAs, and price action\n3. EXTRACT information from the chart systematically\n4. APPLY the V2.1 trading system rules to what you see\n\nYour chart analysis should cover:\n- Zone identification (1H, 15M, CHoCH zones by color/label)\n- Structure points (HH, HL, LH, LL)\n- Current price location\n- EMA positions (if visible)\n- Liquidity sweeps\n- CHoCH/BOS points\n- Current trend state (15M aligned or opposite)\n- What\'s MISSING for a valid long/short entry\n\nTRADING SYSTEM REFERENCE:\n' + TRADING_SYSTEM + '\n\nBe conversational but thorough when analyzing charts. Walk through the V2.1 checklist systematically.';
 
             const contents = [
                 { role: 'user', parts: [{ text: systemPrompt }] },
-                { role: 'model', parts: [{ text: 'Understood! I can see and analyze trading charts. Upload a chart and I\\'ll walk you through it using the V2.1 system.' }] }
+                { role: 'model', parts: [{ text: 'Understood! I can see and analyze trading charts. Upload a chart and I\'ll walk you through it using the V2.1 system.' }] }
             ];
 
             const recentMessages = chat.messages.slice(-10);
-            recentMessages.forEach(msg => {
+            for (let i = 0; i < recentMessages.length; i++) {
+                const msg = recentMessages[i];
                 const parts = [{ text: msg.content }];
                 if (msg.images && msg.images.length > 0) {
-                    msg.images.forEach(img => {
+                    for (let j = 0; j < msg.images.length; j++) {
                         parts.push({
                             inline_data: {
-                                mime_type: img.mimeType,
-                                data: img.data
+                                mime_type: msg.images[j].mimeType,
+                                data: msg.images[j].data
                             }
                         });
-                    });
+                    }
                 }
-                contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts });
-            });
+                contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts: parts });
+            }
 
             const userParts = [{ text: userMessage }];
             if (images && images.length > 0) {
-                images.forEach(img => {
+                for (let i = 0; i < images.length; i++) {
                     userParts.push({
                         inline_data: {
-                            mime_type: img.mimeType,
-                            data: img.data
+                            mime_type: images[i].mimeType,
+                            data: images[i].data
                         }
                     });
-                });
+                }
             }
             contents.push({ role: 'user', parts: userParts });
 
@@ -2577,14 +2603,15 @@ Be conversational but thorough when analyzing charts. Walk through the V2.1 chec
 
             if (!response.ok) { 
                 const error = await response.json(); 
-                console.error('Worker Error:', error);
-                throw new Error(error.error?.message || 'Request failed'); 
+                throw new Error(error.error && error.error.message ? error.error.message : 'Request failed'); 
             }
             const data = await response.json();
             return data.candidates[0].content.parts[0].text;
         }
 
-        function sendExamplePrompt(prompt) { document.getElementById('messageInput').value = prompt; }
+        function sendExamplePrompt(prompt) { 
+            document.getElementById('messageInput').value = prompt; 
+        }
     </script>
 </body>
 </html>

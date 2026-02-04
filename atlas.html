@@ -129,11 +129,22 @@
     <script id="tradingSystem" type="text/plain">
 # HARVEY'S COMPLETE MARKET STRUCTURE LOGIC SYSTEM
 
-**Version 2.1 - Updated Release (Cases A/B Merged)**
+**Version 2.1.1 - Invalid CHoCH & Liquidity Rules Update**
 
 *"May your edge stay sharp and your drawdowns shallow."*
 
-**CHANGELOG (Latest Update):**
+**CHANGELOG (Latest Update - Version 2.1.1):**
+- **Added Invalid CHoCH Patterns section (Section 1.4)**
+  - NZ CHoCH (No Zone CHoCH): CHoCH validation requiring HTF zone tap
+  - LQG CHoCH (Lacking Liquidity Grab CHoCH): Pattern recognition for continuation
+- **Added 3-Candle Pullback Rule (Section 7.5)**
+  - Liquidity requirement for continuation after 3+ candle pullbacks
+  - Immediate BOS exception when all candles contribute to break
+  - Connection to LQG CHoCH pattern formation
+- All three rules apply to 15M and 1H timeframes
+- Enhanced trend validation and continuation logic
+
+**Previous Updates (Version 2.1):**
 - Cases A and B merged into single "Case A/B" category
 - Both cases had identical trading requirements (liquidity → 2M/5M CHoCH → entry)
 - Only difference was conceptual (how 15M became aligned)
@@ -184,7 +195,108 @@ Interchangeable pairs:
 - **Uptrend BOS:** Making Higher High (HH)
 - **Downtrend BOS:** Making Lower Low (LL)
 
-### 1.4 Zone Terminology
+### 1.4 Invalid CHoCH Patterns
+
+**Two types of invalid CHoCH patterns that require special handling:**
+
+---
+
+#### 1.4.1 NZ CHoCH (No Zone CHoCH) - CRITICAL VALIDATION
+
+A CHoCH is only VALID when it occurs at a HIGHER TIMEFRAME zone tap.
+
+**APPLIES TO:** 15M and 1H CHoCH only (NOT 2M/5M entry CHoCH)
+
+**VALIDATION RULES:**
+- **15M CHoCH:** Must tap a **1H zone** (within tap limits: 2 regular, 3 CHoCH zones)
+- **1H CHoCH:** Must tap an **MZONE** (4H/1D/12H/1W/1M zone, within tap limits)
+
+**IF NO HTF ZONE WAS TAPPED = NZ CHoCH (INVALID):**
+- ❌ The CHoCH is INVALID
+- ❌ Do NOT trade in the new CHoCH direction
+- ✅ CONTINUE trading in the SAME direction as BEFORE the false CHoCH
+- ✅ **EXCEPTION:** After **2 consecutive BOS** in the new direction, the trend is confirmed and you CAN trade that direction
+
+**CASE C IMPLICATION:**
+- Valid Case C setup requires 15M CHoCH that occurred at a 1H zone tap
+- If 15M CHoCH is NZ CHoCH (no 1H zone tap) = NO valid Case C setup
+- Continue trading 1H trend direction until:
+  - A valid 15M CHoCH occurs (with 1H zone tap), OR
+  - 2 consecutive BOS happen in the new 15M direction
+
+**PRACTICAL APPLICATION:**
+```
+Example 1 - VALID CHoCH:
+- 1H uptrend active
+- Price taps 1H supply zone
+- 15M shows CHoCH to downtrend
+→ Valid CHoCH, can trade Case C shorts
+
+Example 2 - INVALID (NZ CHoCH):
+- 1H uptrend active
+- Price makes 15M CHoCH to downtrend
+- But NO 1H zone was tapped
+→ NZ CHoCH, ignore it, keep trading 1H uptrend (longs only)
+→ Wait for either: valid CHoCH at 1H zone, OR 2 BOS in new direction
+```
+
+---
+
+#### 1.4.2 LQG CHoCH (Lacking Liquidity Grab CHoCH) - PATTERN RECOGNITION
+
+A CHoCH where the ONLY available liquidity point was the structure point itself.
+
+**APPLIES TO:** 15M and 1H trends
+
+**THE SETUP:**
+1. Trend established (e.g., uptrend: HH → HL → HH)
+2. **3+ candle pullback** occurs (triggers liquidity requirement for continuation)
+3. Need to grab liquidity (low in uptrend, high in downtrend)
+4. **Problem:** Only liquidity point available = the structure point itself (HL in uptrend, LH in downtrend)
+5. Result: Sweeping structure point = CHoCH must occur
+
+**THE PATTERN SEQUENCE:**
+```
+UPTREND EXAMPLE:
+1. Uptrend: HH → HL → HH
+2. 3+ red candles (pullback)
+3. Only low to sweep = HL (structure point)
+4. LQG CHoCH occurs (breaks HL to grab liquidity)
+5. Price continues DOWN to DEEPER demand zone
+   (NOT original continuation zone, but zone BEHIND it)
+6. ✅ ENTER LONG at deeper demand zone
+7. Price reverses upward from deeper zone
+8. 2nd CHoCH occurs (back into uptrend)
+9. Original uptrend continuation resumes
+
+DOWNTREND EXAMPLE:
+1. Downtrend: LL → LH → LL
+2. 3+ green candles (pullback)
+3. Only high to sweep = LH (structure point)
+4. LQG CHoCH occurs (breaks LH to grab liquidity)
+5. Price continues UP to DEEPER supply zone
+   (NOT original continuation zone, but zone BEHIND it)
+6. ✅ ENTER SHORT at deeper supply zone
+7. Price reverses downward from deeper zone
+8. 2nd CHoCH occurs (back into downtrend)
+9. Original downtrend continuation resumes
+```
+
+**TRADING ACTION:**
+- ✅ Enter at the DEEPER zone (trade back in ORIGINAL trend direction)
+- ❌ Don't wait for 2nd CHoCH to occur
+- Direction: Trade the ORIGINAL trend (before LQG CHoCH)
+- This is a continuation pattern, not a reversal
+
+**KEY UNDERSTANDING:**
+- First CHoCH (LQG CHoCH) = liquidity grab mechanism
+- Deeper zone = actual entry point
+- Second CHoCH = confirmation of original trend resumption
+- Pattern completes the liquidity requirement in a roundabout way
+
+---
+
+### 1.5 Zone Terminology
 
 **mzone:** 1D or 12H supply/demand zone ONLY (not 1H)
 
@@ -200,7 +312,7 @@ Interchangeable pairs:
 - These micro trends form internal structure patterns
 - Can have zones that cause BOS within internal structure
 
-### 1.5 Zone Tap Definition
+### 1.6 Zone Tap Definition
 
 **TAP LIFECYCLE:**
 ```
@@ -801,6 +913,59 @@ Get stopped out of trade:
 ├─ Only need: New 2M/5M CHoCH
 └─ Then can re-enter on pullback to new 2M/5M zone
 ```
+
+### 7.5 Three-Candle Pullback Rule
+
+**APPLIES TO:** 15M and 1H trends (for BOS/continuation validation)
+
+**THE RULE:**
+When a pullback extends **OVER 3 candles** in length, liquidity is REQUIRED before price can validly continue in trend direction.
+
+**IMMEDIATE BOS EXCEPTION:**
+If next candles **ALL immediately contribute to BOS**, liquidity is NOT required.
+
+**EXAMPLES:**
+
+**NO LIQUIDITY NEEDED (Immediate BOS):**
+```
+Uptrend active
+3 red candles (pullback)
+Next 4 candles: ALL green, ALL contributing to BOS
+→ Immediate breakout = Valid continuation
+→ No liquidity grab required
+```
+
+**LIQUIDITY REQUIRED (Hesitation):**
+```
+Uptrend active
+3 red candles (pullback)
+Next candles: 2 green, 1 red (hesitation/stall)
+Then continues upward
+→ Price failed to immediately break range
+→ MUST have visible liquidity grab before valid continuation
+```
+
+**THEORY:**
+- 3+ candle pullback = substantial counter-move
+- Price failing to immediately break range after = lack of power
+- Lack of power = market needs liquidity fuel to continue
+- Liquidity grab provides the fuel for continuation
+
+**VISIBLE LIQUIDITY DEFINITION:**
+Any visible high or low on the chart = potential liquidity resting point
+
+**Example (downtrend):**
+```
+Candle A: 107.4
+Candle B: 106.7  
+Candle C: 107.0 ← (higher than B = forms visible high)
+Candle D: 106.4  ← (lower than C)
+
+Candle C = visible liquidity spot (liquidity rests above this high)
+```
+
+**CONNECTION TO LQG CHoCH:**
+If 3+ candle pullback occurs and the ONLY visible liquidity point is the structure point itself (HL/LH), attempting to grab that liquidity creates an LQG CHoCH pattern (see Section 1.4.2).
 
 ---
 
